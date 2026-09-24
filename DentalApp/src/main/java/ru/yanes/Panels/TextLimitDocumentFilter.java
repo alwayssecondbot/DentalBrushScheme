@@ -1,4 +1,4 @@
-package ru.yanes;
+package ru.yanes.Panels;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;

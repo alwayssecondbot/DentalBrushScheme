@@ -1,9 +1,8 @@
-package ru.yanes;
+package ru.yanes.Panels;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.text.PlainDocument;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 
 /**
@@ -39,10 +38,10 @@ public class CommentTextArea extends JTextArea {
 	 * total number of characters to {@code colLimit * rowLimit}, and the number
 	 * of rows to {@code rowLimit}.
 	 *
-	 * @param rows number of rows (limit)
-	 * @param columns number of columns (character limit per line)
-	 * @param font text font
-	 * @param background area background color
+	 * @param rows number of rows (limit);
+	 * @param columns number of columns (character limit per line);
+	 * @param font text font;
+	 * @param background area background color.
 	 */
 	public CommentTextArea(int rows, int columns, Font font, Color background) {
 		super(rows, columns);
@@ -70,7 +69,7 @@ public class CommentTextArea extends JTextArea {
 	 * After the lines are drawn, the parent method is called again with the modified
 	 * graphics context (to correctly display text on top of the lines).
 	 *
-	 * @param g graphics context
+	 * @param g graphics context.
 	 */
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -110,9 +109,9 @@ public class CommentTextArea extends JTextArea {
 		/**
 		 * Creates a rounded border with the specified parameters.
 		 *
-		 * @param borderThickness line thickness
-		 * @param cornerRadius corner radius
-		 * @param borderColor line color
+		 * @param borderThickness line thickness;
+		 * @param cornerRadius corner radius;
+		 * @param borderColor line color.
 		 */
 		public RoundBorder(float borderThickness, int cornerRadius, Color borderColor) {
 			this.borderThickness = borderThickness;
@@ -125,12 +124,12 @@ public class CommentTextArea extends JTextArea {
 		 * Draws a rounded rectangle border around the component.
 		 * Enables anti-aliasing for smooth curves.
 		 *
-		 * @param c : The component for which to draw the border
-		 * @param g : The graphics context
-		 * @param x : The x-coordinate of the upper-left corner
-		 * @param y : The y-coordinate of the upper-left corner
-		 * @param width : The width of the drawing area
-		 * @param height : The height of the drawing area
+		 * @param c : The component for which to draw the border;
+		 * @param g : The graphics context;
+		 * @param x : The x-coordinate of the upper-left corner;
+		 * @param y : The y-coordinate of the upper-left corner;
+		 * @param width : The width of the drawing area;
+		 * @param height : The height of the drawing area.
 		 */
 		@Override
 		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
@@ -147,8 +146,8 @@ public class CommentTextArea extends JTextArea {
 		 * from intersecting with the rounded border. The padding is equal to the corner radius
 		 * on all sides.
 		 *
-		 * @param c - the component for which the padding is calculated
-		 * @return an {@link Insets} object with equal padding equal to {@code cornerRadius}
+		 * @param c the component for which the padding is calculated.
+		 * @return an {@link Insets} object with equal padding equal to {@code cornerRadius}.
 		 */
 		@Override
 		public Insets getBorderInsets(Component c) {
