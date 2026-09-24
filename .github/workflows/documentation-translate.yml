@@ -1,3 +1,4 @@
+#github models have been deprecated since 30.07.2026 so now it i have to migrate it to google gemini
 name: Documentation translation
 on:
   push:

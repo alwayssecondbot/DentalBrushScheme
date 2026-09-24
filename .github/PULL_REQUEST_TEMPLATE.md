@@ -15,7 +15,7 @@ _Pin issue number, which this PR closes, for e.g.: Closes #123_
 **Check-list**
 - [ ] The code was tested locally
 - [ ] The code tests was added/updated
-- [ ] Обновлена документация
+- [ ] The documentation was updated
 
 **Additional info**
 

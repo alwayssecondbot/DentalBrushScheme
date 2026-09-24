@@ -23,6 +23,8 @@ import ru.yanes.data.Mouth;
 import ru.yanes.data.Space;
 import ru.yanes.data.Tooth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The main class of the application, representing the main window of the dental scheme.
@@ -30,7 +32,7 @@ import ru.yanes.data.Tooth;
  * The window contains three main panels:
  * <ol>
  *     <li>{@link DentalPanel} — displays jaws, teeth, spaces and a comment field;</li>
- *     <li>{@link BrushPanel} — displays the available brush types and allows you to select one of themх;</li>
+ *     <li>{@link BrushPanel} — displays the available brush types and allows you to select one of them;</li>
  *     <li>{@link ToolPanel} — contains tool buttons (eg print button).</li>
  * </ol>
  * The app uses the {@link Mouth} model to store the state of teeth and spaces.
@@ -40,6 +42,8 @@ import ru.yanes.data.Tooth;
  * @since 2026-08
  */
 public class DentalScheme extends JFrame {
+	/** Logger engine for {@link DentalScheme} */
+	private static final Logger log = LoggerFactory.getLogger(DentalScheme.class);
 	/** The currently selected brush. If no brush is selected, the value is {@code null}. */
 	private Brush selectedBrush;
 	/** Minimal width and height of app window ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height). */
@@ -66,6 +70,7 @@ public class DentalScheme extends JFrame {
 	 * configures window settings and adds all panels.
 	 */
 	public DentalScheme() {
+
 		Mouth mouth = new Mouth();
 		basicFont = fonts[count];
 		System.out.println("Font Name: " + basicFont);
@@ -79,9 +84,30 @@ public class DentalScheme extends JFrame {
 //		this.add(new CommentPanel(), BorderLayout.WEST);
 		this.add(new ToolPanel(dentalPanel), BorderLayout.NORTH);
 		this.add(dentalPanel, BorderLayout.CENTER);
-
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
+
+		log.info("DentalScheme initialized successfully.");
+		log.trace("""
+				Parameters: [
+					mouth: '{}',
+					title: '{}',
+					defaultCloseOperation: '{}',
+					minimumSize: '{}',
+					dentalPanel: '{}',
+					visible: '{}',
+					logger: '{}',
+					selectedBrush: '{}',
+					windowMinSize: '{}',
+					brushPanelPreferSize: '{}',
+					commentPanelPreferSize: '{}',
+					toolPanelPreferSize: '{}',
+					basicFont: '{}',
+					defaultBackground: '{}'
+				].""",
+				mouth, this.getTitle(), this.getDefaultCloseOperation(), this.getMinimumSize(), dentalPanel, this.isVisible(), log,
+				this.selectedBrush, this.windowMinSize, this.brushPanelPreferSize, this.commentPanelPreferSize, this.toolPanelPreferSize,
+				this.basicFont, this.defaultBackground);
 	}
 
 	/**
@@ -90,12 +116,19 @@ public class DentalScheme extends JFrame {
 	 * @param args command line arguments (not used)
 	 */
 	public static void main(String[] args) {
+		log.info("Initializing DentalScheme...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Error while initializing DentalScheme", e); //
 		}
 
+		log.info("Initializing complete.");
+		log.trace("""
+				Parameters: [
+					args: '{}'
+				].
+				""", (Object) args);
 		SwingUtilities.invokeLater(DentalScheme::new);
 	}
 
@@ -104,8 +137,10 @@ public class DentalScheme extends JFrame {
 	 * Located at the top of the window.
 	 */
 	class ToolPanel extends JPanel {
-		/** Link to the main panel {@link DentalPanel} that will be printed. */
+		/** Link to the main panel {@link ToolPanel} that will be printed. */
 		private final DentalPanel frameToPrint;
+		/** Logger engine for {@link DentalScheme} */
+		private final Logger log = LoggerFactory.getLogger(ToolPanel.class);
 
 		/**
 		 * Creates a toolbar and adds a print button to it.
@@ -113,12 +148,26 @@ public class DentalScheme extends JFrame {
 		 * @param dentalPanel the {@link DentalPanel} panel to print
 		 */
 		public ToolPanel(DentalPanel dentalPanel) {
+
+
 			this.frameToPrint = dentalPanel;
 			this.setPreferredSize(new Dimension(toolPanelPreferSize[0], toolPanelPreferSize[1]));
 			this.setBackground(defaultBackground);
 			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			this.setAlignmentY(TOP_ALIGNMENT);
 			this.add(getPrintButton());
+
+			log.info("Tool panel initialized successfully.");
+			log.trace("""
+					Parameters: [
+						log: '{}'
+						frameToPrint: '{}',
+						preferredSize: '{}',
+						background: '{}',
+						layout: '{}',
+						alignmentY: '{}'
+					].""",
+					this.log, this.frameToPrint, this.getPreferredSize(), this.getBackground(), this.getLayout(), this.getAlignmentY());
 		}
 
 		/**
@@ -128,19 +177,25 @@ public class DentalScheme extends JFrame {
 		 * @return button with a configured print handler
 		 */
 		private JButton getPrintButton() {
+			log.debug("Configuring print button...");
 			return getToolButton("Печать", e -> {
 
-				PrinterJob job = PrinterJob.getPrinterJob();
+				log.info("Print requested by user. Opening printer job dialog...");
 
+				PrinterJob job = PrinterJob.getPrinterJob();
 				job.setPrintable(frameToPrint);
 
 				if (job.printDialog()) {
 					try {
+						log.info("Print dialog confirmed. Starting print process...");
 						job.print();
+						log.info("Printing completed successfully.");
 					} catch (PrinterException e1) {
-						e1.printStackTrace();
-						JOptionPane.showMessageDialog(frameToPrint, "Ошибка печати: " + e1.getMessage());
+						log.error("Error occurred while printing DentalPanel:", e1);
+						JOptionPane.showMessageDialog(frameToPrint, "Error while printing: " + e1.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
 					}
+				} else {
+					log.info("Printing was cancelled by the user in the print dialog.");
 				}
 			});
 		}
@@ -153,6 +208,7 @@ public class DentalScheme extends JFrame {
 		 * @return a ready-made button with a customized font, size, and handler
 		 */
 		private JButton getToolButton(String text, ActionListener actionListener) {
+			log.debug("Creating tool button with label: '{}'", text);
 			JButton button = new JButton(text);
 			button.setFont(new Font(basicFont, Font.PLAIN, 18));
 			button.setPreferredSize(new Dimension(100,30));
@@ -160,6 +216,20 @@ public class DentalScheme extends JFrame {
 			button.setOpaque(true);
 
 			button.addActionListener(actionListener);
+
+			log.trace("""
+					Parameters: [
+						button: '{}',
+						text: '{}',
+						font: '{}',
+						preferredSize: '{}',
+						focusPainted: '{}',
+						opaque: '{}',
+						actionListener: '{}'
+					].""",
+					button, button.getText(), button.getFont(), button.getPreferredSize(), button.isFocusPainted(), button.isOpaque(),
+					button.getActionListeners());
+
 			return button;
 		}
 	}
@@ -274,6 +344,8 @@ public class DentalScheme extends JFrame {
 	 * Clicking on a brush selects or deselects it.
 	 */
 	class BrushPanel extends JPanel {
+		/** Logger engine for {@link BrushPanel} */
+		private final Logger log = LoggerFactory.getLogger(BrushPanel.class);
 		/** Link to the main panel to notify about the need to redraw after selecting a brush */
 		private final DentalPanel dentalPanel;
 		/** The diameter of the circle representing the brush, in pixels.*/
@@ -288,12 +360,24 @@ public class DentalScheme extends JFrame {
 			this.setBackground(defaultBackground);
 			this.setPreferredSize(new Dimension(brushPanelPreferSize[0], brushPanelPreferSize[1]));
 
+			log.info("Adding mouse listener brush panel...");
 			this.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mousePressed(MouseEvent e) {
 						handlePanelClick(e.getX(), e.getY());
 					}
 			});
+
+			log.info("Tool panel initialized successfully.");
+			log.trace("""
+					Parameters: [
+						log: '{}',
+						dentalPanel: '{}',
+						preferredSize: '{}',
+						background: '{}',
+						brushDiameter: '{}'
+					].""",
+					this.log, this.dentalPanel, this.getPreferredSize(), this.getBackground(), this.brushDiameter);
 		}
 
 		/**
@@ -304,6 +388,7 @@ public class DentalScheme extends JFrame {
 		 * @param mouseY is the y-coordinate of the click
 		 */
 		private void handlePanelClick(int mouseX, int mouseY) {
+			log.debug("handlePanelClick: [ mouseX: {}, mouseY: {} ].", mouseX, mouseY);
 			int centerX = getWidth() / 2;
 			int centerY = getHeight() / 2;
 
@@ -313,6 +398,8 @@ public class DentalScheme extends JFrame {
 				dentalPanel.repaint();
 				return;
 			}
+
+			log.trace("Click at x={}, y={} did not target any brush.", mouseX, mouseY);
 		}
 
 		/**
@@ -327,6 +414,8 @@ public class DentalScheme extends JFrame {
 		 * @return {@code true} if the click was processed (hit a brush), otherwise {@code false}
 		 */
 		private boolean checkBrushClick(int mouseX, int mouseY, int centerX, int centerY) {
+			log.debug("CheckBrushClick: [ mouseX: '{}', mouseY: '{}', centerX: '{}', centerY: '{}' ].", mouseX, mouseY, centerX, centerY);
+
 			int brushCount = Brush.values().length;
 
 			for (int i = 1; i <= brushCount; i++) {
@@ -339,10 +428,10 @@ public class DentalScheme extends JFrame {
 
 					//Then if brush has been selected - unpin, if it hasn't - pin
 					if (Objects.equals(clickedBrush, selectedBrush)) {
-						System.out.println("Unpinned brush - " + clickedBrush.getDiameter());
+						log.info("Deselected brush: [ diameter: '{}' ].", clickedBrush.getDiameter());
 						selectedBrush = null;
 					} else {
-						System.out.println("Pinned brush - " + clickedBrush.getDiameter());
+						log.info("Selected brush: [ diameter: '{}' ].", clickedBrush.getDiameter());
 						selectedBrush = clickedBrush;
 					}
 
@@ -436,6 +525,8 @@ public class DentalScheme extends JFrame {
 	 * (set the selected toothbrush).
 	 */
 	class DentalPanel extends JPanel implements Printable {
+		/** Logger engine for {@link DentalPanel} */
+		private final Logger log = LoggerFactory.getLogger(DentalPanel.class);
 		/** Mouth model containing teeth and spaces. */
 		private final Mouth mouth;
 		/** Horizontal and vertical radius of the elliptical arcs for the jaws. */
@@ -451,12 +542,16 @@ public class DentalScheme extends JFrame {
 		/** Tooth width and height in pixels. */
 		private final int toothWidth = 45;
 		private final int toothHeight = 55;
+		/** Tooth click radius. */
+		private final int toothRadius = 25;
 		/** Basic tooth color (white). */
 		private final Color basicToothColor = Color.WHITE;
 
 		/** Space (triangle) width and height in pixels. */
 		private final int spaceWidth = 15;
 		private final int spaceHeight = 45;
+		/** Space click radius. */
+		private final int spaceRadius = 13;
 		/** Array of x-coordinates of the space's base triangle (relative to the center). */
 		private final int[] basicSpaceX = new int[]{0, spaceWidth, -spaceWidth};
 		/**Arrays of y-coordinates of the space's outer and inner triangles. */
@@ -465,10 +560,6 @@ public class DentalScheme extends JFrame {
 		/** The space's base color (same as {@link DentalScheme#defaultBackground}). */
 		private final Color basicSpaceColor = defaultBackground;
 
-		/** Tooth click radius. */
-		private final int toothRadius = 25;
-		/** Space click radius. */
-		private final int spaceRadius = 13;
 
 		/** Comment title text. */
 		private final String comment = "Поле для комментария";
@@ -503,6 +594,34 @@ public class DentalScheme extends JFrame {
 					handlePanelClick(e.getX(), e.getY());
 				}
 			});
+			log.info("DentalPanel initialized successfully.");
+			log.trace("""
+							Parameters: [ mouth: '{}',
+							 background: '{}',
+							 layout: '{}',
+							 radiusX: '{}',
+							 radiusY: '{}',
+							 startAngleUpperJaw: '{}',
+							 endAngleUpperJaw: '{}',
+							 startAngleLowerJaw: '{}',
+							 endAngleLowerJaw: '{}',
+							 toothWidth: '{}',
+							 toothHeight: '{}',
+							 toothRadius: '{}',
+							 basicToothColor: '{}',
+							 spaceWidth: '{}',
+							 spaceHeight: '{}',
+							 spaceRadius: '{}',
+							 basicSpaceX: '{}',
+							 outerSpaceY: '{}',
+							 innerSpaceY: '{}',
+							 basicSpaceColor: '{}',
+							 commentAreaRowLimit: '{}',
+							 commentAreaColumnLimit: '{}'].""",
+					this.mouth, this.getBackground(), this.getLayout(), this.radiusX, this.radiusY, this.startAngleUpperJaw, this.endAngleUpperJaw,
+					this.startAngleLowerJaw, this.endAngleLowerJaw, this.toothWidth, this.toothHeight, this.toothRadius, this.basicToothColor,
+					this.spaceWidth, this.spaceHeight, this.spaceRadius, this.basicSpaceX, this.outerSpaceY, this.innerSpaceY,
+					this.basicSpaceColor, this.commentAreaRowLimit, this.commentAreaColumnLimit);
 		}
 
 		/**
@@ -513,6 +632,7 @@ public class DentalScheme extends JFrame {
 		 * @param mouseY is the y-coordinate of the click
 		 */
 		private void handlePanelClick(int mouseX, int mouseY) {
+			log.debug("HandlePanelClick: [ x: '{}', y: '{}' ].", mouseX, mouseY);
 			int centerX = getWidth() / 2;
 			int centerY = getHeight() / 2;
 
@@ -527,6 +647,8 @@ public class DentalScheme extends JFrame {
 				repaint();
 				return;
 			}
+
+			log.trace("Click at x={}, y={} did not target any tooth or space.", mouseX, mouseY);
 		}
 
 		/**
@@ -560,7 +682,7 @@ public class DentalScheme extends JFrame {
 					Tooth clickedTooth = mouth.getTooth(start + i);
 					// Toggle availability state
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
-					System.out.println("Toggled Tooth " + clickedTooth.getPosition() + " to available = " + clickedTooth.isAvailable());
+					log.info("Toggled Tooth FDI {} to available = {}", clickedTooth.getPosition(), clickedTooth.isAvailable());
 					return true;
 				}
 
@@ -597,10 +719,12 @@ public class DentalScheme extends JFrame {
 						//Check if inner space was clicked
 						if (getDistance(mouseX, mouseY, outerX, outerY) <= spaceRadius) {
 							clickedSpace.setOuterBrush(selectedBrush);
+							log.info("Assigned outer brush {} to Space position {}", selectedBrush, clickedSpace.getPosition());
 							return true;
 						//Check if outer space was clicked
 						} else if (getDistance(mouseX, mouseY, innerX, innerY) <= spaceRadius) {
 							clickedSpace.setInnerBrush(selectedBrush);
+							log.info("Assigned inner brush {} to Space position {}", selectedBrush, clickedSpace.getPosition());
 							return true;
 						}
 					}
@@ -625,7 +749,7 @@ public class DentalScheme extends JFrame {
 
 		/**
 		 * Renders the upper and lower jaws, as well as the labels "Upper Jaw,"
-		 * "Lower Jaw," "Left," and "Right." Enables anti-aliasing for high-quality rendering.
+		 * "Lower Jaw," "Left," and "Right." Enables antialiasing for high-quality rendering.
 		 *
 		 * @param g graphics context
 		 */
@@ -742,7 +866,7 @@ public class DentalScheme extends JFrame {
 		 */
 		private void drawTooth(Graphics2D g2d, Tooth tooth, int x, int y, double angle) {
 
-//			System.out.println("Drawing tooth - " + tooth.getPosition() + ";");
+			log.trace("Rendering tooth FDI: '{}'.", tooth.getPosition());
 
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
@@ -810,7 +934,7 @@ public class DentalScheme extends JFrame {
 				return basicSpaceColor.darker();
 			};
 
-//			System.out.println("Drawing spaces '" + space.getPosition() + "' between left tooth - " + space.getLeftTooth().getPosition() + " and right tooth - " + space.getRightTooth().getPosition() + ";");
+			log.trace("Rendering spaces '{}' between left tooth - '{}' and right tooth - '{}'.", space.getPosition(), space.getLeftTooth().getPosition(), space.getRightTooth().getPosition());
 
 			Stroke stroke;
 			//Set stroke params
@@ -880,8 +1004,12 @@ public class DentalScheme extends JFrame {
 		@Override
 		public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
 			if (pageIndex > 0) {
+				log.debug("Print requested for non-existent page index: {}", pageIndex);
 				return Printable.NO_SUCH_PAGE;
 			}
+
+			log.info("Starting print process for DentalPanel (page index 0)...");
+
 			int width = this.getWidth();
 			int height = this.getHeight();
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -900,6 +1028,7 @@ public class DentalScheme extends JFrame {
 			g2d.scale(scale, scale);
 			g2d.drawImage(image, 0, 0, null);
 
+			log.info("DentalPanel printable area successfully rendered to printer graphics.");
 			return Printable.PAGE_EXISTS;
 		}
 	}
