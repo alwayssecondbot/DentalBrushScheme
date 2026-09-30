@@ -183,7 +183,7 @@ public class DentalPanel extends JPanel implements Printable {
 
 
 		// Check Upper Jaw click targets
-		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, false)
+		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY + 40, false)
 				.ifPresentOrElse( hit -> {
 					Space space = mouth.getSpace(hit.position());
 					if (hit.isInner()){

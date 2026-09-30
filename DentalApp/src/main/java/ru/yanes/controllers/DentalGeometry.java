@@ -73,8 +73,8 @@ public class DentalGeometry {
 			int midY = (int) (centerY + RADIUS_Y * Math.sin(midAngle));
 
 			// Повернутые координаты внешней зоны
-			int outerX = (int) Math.round(midX + BASIC_SPACE_X[0] * Math.cos(midAngle + Math.PI / 2) - LOCAL_OUTER_Y * Math.sin(midAngle + Math.PI / 2));
-			int outerY = (int) Math.round(midY + BASIC_SPACE_X[0] * Math.cos(midAngle + Math.PI / 2) + LOCAL_OUTER_Y * Math.cos(midAngle + Math.PI / 2));
+			int outerX = (int) Math.round(midX - LOCAL_OUTER_Y * Math.sin(midAngle + Math.PI / 2));
+			int outerY = (int) Math.round(midY + LOCAL_OUTER_Y * Math.cos(midAngle + Math.PI / 2));
 
 			// Повернутые координаты внутренней зоны
 			int innerX = (int) Math.round(midX - LOCAL_INNER_Y * Math.sin(midAngle + Math.PI / 2));
