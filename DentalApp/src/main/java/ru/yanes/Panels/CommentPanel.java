@@ -28,7 +28,9 @@ class CommentPanel extends JPanel {
 		gbc.weighty = 0.0;
 		gbc.anchor = GridBagConstraints.CENTER;
 
-		this.add(new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(font, Font.PLAIN, 18), background), gbc);
+		CommentTextArea commentTextArea = new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(font, Font.PLAIN, 18), background);
+		commentTextArea.setName("commentTextArea");
+		this.add(commentTextArea, gbc);
 	}
 
 	@Override

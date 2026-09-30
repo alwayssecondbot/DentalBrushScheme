@@ -78,12 +78,20 @@ public class DentalScheme extends JFrame {
 		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
 
 		dentalPanel = new DentalPanel(this, defaultBackground, basicFont);
+		dentalPanel.setName("dentalPanel");
+
 		brushPanel = new BrushPanel(this, defaultBackground, brushPanelPreferSize, basicFont);
+		brushPanel.setName("brushPanel");
+
 		this.add(brushPanel, BorderLayout.EAST);
 
-//		this.add(new CommentPanel(), BorderLayout.WEST);
+//		CommentPanel commentPanel = new CommentPanel();
+//		commentPanel.setName("commentPanel");
+//		this.add(commentPanel, BorderLayout.WEST);
 
 		toolPanel = new ToolPanel(dentalPanel, defaultBackground, brushPanelPreferSize, basicFont);
+		toolPanel.setName("toolPanel");
+
 		this.add(toolPanel, BorderLayout.NORTH);
 
 		this.add(dentalPanel, BorderLayout.CENTER);

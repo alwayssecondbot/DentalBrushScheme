@@ -41,7 +41,10 @@ public class ToolPanel extends JPanel {
 		this.setBackground(background);
 		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		this.setAlignmentY(TOP_ALIGNMENT);
-		this.add(getPrintButton());
+
+		JButton printButton = getPrintButton();
+		printButton.setName("printButton");
+		this.add(printButton);
 
 		log.info("Tool panel initialized successfully.");
 		log.trace("""

@@ -87,7 +87,9 @@ public class DentalPanel extends JPanel implements Printable {
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.CENTER;
 
-		this.add(new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(font, Font.PLAIN, 18), this.background), gbc);
+		CommentTextArea commentTextArea = new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(font, Font.PLAIN, 18), this.background);
+		commentTextArea.setName("commentTextArea");
+		this.add(commentTextArea, gbc);
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -183,7 +185,7 @@ public class DentalPanel extends JPanel implements Printable {
 
 
 		// Check Upper Jaw click targets
-		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY + 40, false)
+		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, false)
 				.ifPresentOrElse( hit -> {
 					Space space = mouth.getSpace(hit.position());
 					if (hit.isInner()){
