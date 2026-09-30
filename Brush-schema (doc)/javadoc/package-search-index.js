@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"ru.yanes"},{"l":"ru.yanes.data"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"ru.yanes"},{"l":"ru.yanes.data"},{"l":"ru.yanes.Panels"}];updateSearchResults();

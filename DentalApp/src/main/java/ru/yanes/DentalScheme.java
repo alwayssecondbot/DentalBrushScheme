@@ -9,8 +9,8 @@ import lombok.Setter;
 import ru.yanes.Panels.BrushPanel;
 import ru.yanes.Panels.DentalPanel;
 import ru.yanes.Panels.ToolPanel;
-import ru.yanes.data.Brush;
-import ru.yanes.data.Mouth;
+import ru.yanes.models.Brush;
+import ru.yanes.models.Mouth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +35,10 @@ public class DentalScheme extends JFrame {
 	private static final Logger log = LoggerFactory.getLogger(DentalScheme.class);
 	/** Minimal width and height of app window ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height). */
 	private final int[] windowMinSize = new int[]{1600, 1300};
-
 	/** Minimal width and height of {@code CommentPanel} ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height).
 	 * @deprecated The {@code CommentPanel} is disabled, instead the comment is embedded in the {@link DentalPanel}
 	 */
 	private final int[] commentPanelPreferSize = new int[]{400, 0};
-
 	/**Font family name which is used by default in app.*/
 	private String basicFont;
 	/**Temporary field with counter for font families*/
@@ -49,8 +47,7 @@ public class DentalScheme extends JFrame {
 	private final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 	/**Default background color for app. Currently - light green.*/
 	private final Color defaultBackground = new Color(230, 240, 230);
-
-	/**Brush panel where displays the available brush types and allows you to select one of them.*/
+	/**Panel where displays the available brush types and allows you to select one of them.*/
 	private final BrushPanel brushPanel;
 	/** Minimal width and height of {@link BrushPanel} ({@code brushPanelPreferSize[0]} — width, {@code brushPanelPreferSize[1]} — height). */
 	private final int[] brushPanelPreferSize = new int[]{400, 0};
@@ -58,9 +55,9 @@ public class DentalScheme extends JFrame {
 	@Setter
 	@Getter
 	private Brush selectedBrush;
-
+	/**Panel with teeth, spaces and comment area*/
 	private final DentalPanel dentalPanel;
-
+	/**Panel with tool buttons*/
 	private final ToolPanel toolPanel;
 	/** Minimal width and height of {@link ToolPanel} ({@code toolPanelPreferSize[0]} — width, {@code toolPanelPreferSize[1]} — height). */
 	private final int[] toolPanelPreferSize = new int[]{0, 30};
@@ -81,7 +78,7 @@ public class DentalScheme extends JFrame {
 		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
 
 		dentalPanel = new DentalPanel(this, defaultBackground, basicFont);
-		brushPanel = new BrushPanel(this, dentalPanel, defaultBackground, brushPanelPreferSize, basicFont);
+		brushPanel = new BrushPanel(this, defaultBackground, brushPanelPreferSize, basicFont);
 		this.add(brushPanel, BorderLayout.EAST);
 
 //		this.add(new CommentPanel(), BorderLayout.WEST);
@@ -95,12 +92,14 @@ public class DentalScheme extends JFrame {
 
 		log.info("DentalScheme initialized successfully.");
 		log.trace("""
-				Parameters: [
+				Panel parameters: [
 					title: '{}',
 					defaultCloseOperation: '{}',
 					minimumSize: '{}',
+					visible: '{}'
+				];
+				Class fields: [
 					dentalPanel: '{}',
-					visible: '{}',
 					logger: '{}',
 					windowMinSize: '{}',
 					brushPanelPreferSize: '{}',
@@ -109,7 +108,7 @@ public class DentalScheme extends JFrame {
 					basicFont: '{}',
 					defaultBackground: '{}'
 				].""",
-				this.getTitle(), this.getDefaultCloseOperation(), this.getMinimumSize(), dentalPanel, this.isVisible(), log,
+				this.getTitle(), this.getDefaultCloseOperation(), this.getMinimumSize(), this.isVisible(), dentalPanel, log,
 				this.windowMinSize, this.brushPanelPreferSize, this.commentPanelPreferSize, this.toolPanelPreferSize,
 				this.basicFont, this.defaultBackground);
 	}

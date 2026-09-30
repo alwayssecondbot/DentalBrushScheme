@@ -77,7 +77,7 @@ public class TextLimitDocumentFilter extends DocumentFilter {
 	}
 
 	/**
-	 * Counts the number of lines in the passed text.
+	 * Counts the number of lines in the entered text.
 	 * An empty line is counted as 0 lines; otherwise, the number of lines is equal to
 	 * the number of line feed characters {@code '\n'} plus one.
 	 *

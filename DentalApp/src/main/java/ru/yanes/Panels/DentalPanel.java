@@ -2,11 +2,14 @@ package ru.yanes.Panels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import ru.yanes.DentalScheme;
-import ru.yanes.data.Brush;
-import ru.yanes.data.Mouth;
-import ru.yanes.data.Space;
-import ru.yanes.data.Tooth;
+import ru.yanes.controllers.DentalGeometry;
+import ru.yanes.models.Brush;
+import ru.yanes.models.Mouth;
+import ru.yanes.models.Space;
+import ru.yanes.models.Tooth;
+import static ru.yanes.config.DentalGeometryConstants.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +20,10 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
+
+
 
 /**
  * The main panel displays the upper and lower jaws with teeth and spaces,
@@ -33,55 +37,13 @@ public class DentalPanel extends JPanel implements Printable {
 	 */
 	private final Logger log = LoggerFactory.getLogger(DentalPanel.class);
 	/**
-	 * Mouth model containing teeth and spaces.
-	 */
-	private final Mouth mouth;
-	/**
-	 * Horizontal and vertical radius of the elliptical arcs for the jaws.
-	 */
-	private final int radiusX = 350;
-	private final int radiusY = 430;
-	/**
-	 * Start and end angles of the upper jaw arc (in radians).
-	 */
-	private final double startAngleUpperJaw = Math.PI * 1.05;
-	private final double endAngleUpperJaw = Math.PI * 1.95;
-	/**
-	 * Start and end angles of the lower jaw arc (in radians).
-	 */
-	private final double startAngleLowerJaw = Math.PI * 0.95;
-	private final double endAngleLowerJaw = Math.PI * 0.05;
-	/**
-	 * Tooth width and height in pixels.
-	 */
-	private final int toothWidth = 45;
-	private final int toothHeight = 55;
-	/**
-	 * Tooth click radius.
-	 */
-	private final int toothRadius = 25;
-	/**
 	 * Basic tooth color (white).
 	 */
 	private final Color basicToothColor = Color.WHITE;
 	/**
-	 * Space (triangle) width and height in pixels.
+	 * Mouth model containing teeth and spaces.
 	 */
-	private final int spaceWidth = 15;
-	private final int spaceHeight = 45;
-	/**
-	 * Space click radius.
-	 */
-	private final int spaceRadius = 13;
-	/**
-	 * Array of x-coordinates of the space's base triangle (relative to the center).
-	 */
-	private final int[] basicSpaceX = new int[]{0, spaceWidth, -spaceWidth};
-	/**
-	 * Arrays of y-coordinates of the space's outer and inner triangles.
-	 */
-	private final int[] outerSpaceY = new int[]{-toothHeight / 3, -spaceHeight, -spaceHeight};
-	private final int[] innerSpaceY = new int[]{toothHeight / 3, spaceHeight, spaceHeight};
+	private final Mouth mouth;
 	/**
 	 * The color of panel background and empty spaces.
 	 */
@@ -142,32 +104,15 @@ public class DentalPanel extends JPanel implements Printable {
 					Class fields: [
 						log: '{}',
 						mouth: '{}',
-						radiusX: '{}',
-						radiusY: '{}',
-						startAngleUpperJaw: '{}',
-						endAngleUpperJaw: '{}',
-						startAngleLowerJaw: '{}',
-						endAngleLowerJaw: '{}',
-						toothWidth: '{}',
-						toothHeight: '{}',
-						toothRadius: '{}',
 						basicToothColor: '{}',
-						spaceWidth: '{}',
-						spaceHeight: '{}',
-						spaceRadius: '{}',
-						basicSpaceX: '{}',
-						outerSpaceY: '{}',
-						innerSpaceY: '{}',
 						background: '{}'
 						dentalScheme: '{}',
 						comment: '{}',
 						commentAreaRowLimit: '{}',
 						commentAreaColumnLimit: '{}'
 					].""",
-				this.getBackground(), this.getLayout(), this.log, this.mouth, this.radiusX, this.radiusY, this.startAngleUpperJaw,
-				this.endAngleUpperJaw, this.startAngleLowerJaw, this.endAngleLowerJaw, this.toothWidth, this.toothHeight, this.toothRadius,
-				this.basicToothColor, this.spaceWidth, this.spaceHeight, this.spaceRadius, this.basicSpaceX, this.outerSpaceY, this.innerSpaceY,
-				this.background, this.dentalScheme, this.comment, this.commentAreaRowLimit, this.commentAreaColumnLimit);
+				this.getBackground(), this.getLayout(), this.log, this.mouth, this.basicToothColor, this.background, this.dentalScheme,
+				this.comment, this.commentAreaRowLimit, this.commentAreaColumnLimit);
 	}
 
 	/**
@@ -178,119 +123,83 @@ public class DentalPanel extends JPanel implements Printable {
 	 * @param mouseY is the y-coordinate of the click.
 	 */
 	private void handlePanelClick(int mouseX, int mouseY) {
-		log.debug("HandlePanelClick: [ x: '{}', y: '{}' ].", mouseX, mouseY);
+
 		int centerX = getWidth() / 2;
 		int centerY = getHeight() / 2;
 
+		Brush selectedBrush = dentalScheme.getSelectedBrush();
+		log.debug("""
+			HandlePanelClick: [
+				x: '{}',
+				y: '{}',
+				selectedBrush: '{}'
+		].""", mouseX, mouseY, selectedBrush);
+
 		// Check Upper Jaw click targets
-		if (checkJawClick(mouseX, mouseY, true, centerX, centerY - 40, startAngleUpperJaw, endAngleUpperJaw)) {
-			repaint();
-			return;
-		}
+		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY - 40, true)
+				.ifPresentOrElse(pos -> {
+					Tooth clickedTooth = mouth.getTooth(pos);
+					clickedTooth.setAvailable(!clickedTooth.isAvailable());
+					log.debug("""
+							Clicked tooth: [
+								FDI: '{}',
+								available: '{}'
+							].""", clickedTooth.getPosition(), clickedTooth.isAvailable());
+					this.repaint();
+				}, () -> log.trace("Click at x={}, y={} did not target any tooth on the upper jaw.", mouseX, mouseY));
+
+		// Check Upper Jaw click targets
+		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, true)
+						.ifPresentOrElse( hit -> {
+							Space space = mouth.getSpace(hit.position());
+							if (hit.isInner()){
+								space.setInnerBrush(selectedBrush);
+							} else {
+								space.setOuterBrush(selectedBrush);
+							}
+
+							log.debug("""
+								Clicked tooth: [
+									position: '{}',
+									inner: '{}',
+									brush: '{}'
+								].""", space.getPosition(), hit.isInner(), hit.isInner()? space.getInnerBrush() : space.getOuterBrush());
+
+							this.repaint();
+						}, () -> log.trace("Click at x={}, y={} did not target any space on the upper jaw.", mouseX, mouseY));
 
 		// Check Lower Jaw click targets
-		if (checkJawClick(mouseX, mouseY, false, centerX, centerY + 40, startAngleLowerJaw, endAngleLowerJaw)) {
-			repaint();
-			return;
-		}
-
-		log.trace("Click at x={}, y={} did not target any tooth or space.", mouseX, mouseY);
-	}
-
-	/**
-	 * Checks whether the click hits teeth and spaces on the specified jaw.
-	 * If the click hits a tooth, toggles its availability. If the click hits an
-	 * available space and a brush is selected, assigns that brush to the corresponding
-	 * part of the space (inner or outer).
-	 *
-	 * @param mouseX     : x-coordinate of the click;
-	 * @param mouseY     : y-coordinate of the click;
-	 * @param upper      : {@code true} for the upper jaw, {@code false} for the lower jaw;
-	 * @param centerX    : x-coordinate of the center of the jaw arc;
-	 * @param centerY    : y-coordinate of the center of the jaw arc;
-	 * @param startAngle : start angle of the arc (in radians);
-	 * @param endAngle   : end angle of the arc (in radians);
-	 * @return {@code true} if the click was processed (tooth or gap), otherwise {@code false}.
-	 */
-	private boolean checkJawClick(int mouseX, int mouseY, boolean upper,
-	                              int centerX, int centerY, double startAngle, double endAngle) {
-
-		int start = upper ? 0 : 16;
-		double angleStep = (endAngle - startAngle) / 15;
-
-		// 1. Check if the user clicked any Tooth
-		for (int i = 0; i < 16; i++) {
-			double currentAngle = startAngle + angleStep * (double) i;
-			int x = (int) (centerX + radiusX * Math.cos(currentAngle));
-			int y = (int) (centerY + radiusY * Math.sin(currentAngle));
-
-			if (getDistance(mouseX, mouseY, x, y) <= toothRadius) {
-				Tooth clickedTooth = mouth.getTooth(start + i);
-				// Toggle availability state
-				clickedTooth.setAvailable(!clickedTooth.isAvailable());
-				log.info("Toggled Tooth FDI {} to available = {}", clickedTooth.getPosition(), clickedTooth.isAvailable());
-				return true;
-			}
-
-			if (i < 15 && Objects.nonNull(dentalScheme.getSelectedBrush())) {
-				Space clickedSpace;
-				if (upper) {
-					clickedSpace = this.mouth.getSpace(start + i);
-				} else {
-					clickedSpace = this.mouth.getSpace(start + i - 1);
-				}
-
-				if (clickedSpace.isAvailable()) {
-					double midAngle = currentAngle + angleStep / 2;
-					int midX = (int) (centerX + radiusX * Math.cos(midAngle));
-					int midY = (int) (centerY + radiusY * Math.sin(midAngle));
-
-					//Y of outer triangle center
-					double localOuterY = Arrays.stream(outerSpaceY).average().getAsDouble();
-					//Y of inner triangle center
-					double localInnerY = Arrays.stream(innerSpaceY).average().getAsDouble();
+		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY + 40, false)
+				.ifPresentOrElse(pos -> {
+					Tooth clickedTooth = mouth.getTooth(pos);
+					clickedTooth.setAvailable(!clickedTooth.isAvailable());
+					log.debug("""
+							Clicked tooth: [
+								FDI: '{}',
+								available: '{}'
+							].""", clickedTooth.getPosition(), clickedTooth.isAvailable());
+					this.repaint();
+					}, () -> log.trace("Click at x={}, y={} did not target any tooth on the lower jaw.", mouseX, mouseY));
 
 
-					//Rotated outer x - (midX + dx * cos(θ) - dy * sin(θ))
-					int outerX = (int) Math.round(midX + basicSpaceX[0] * Math.cos(midAngle + Math.PI / 2) - localOuterY * Math.sin(midAngle + Math.PI / 2));
-					// and y - (midY + dx * sin(θ) + dy * cos(θ))
-					int outerY = (int) Math.round(midY + basicSpaceX[0] * Math.sin(midAngle + Math.PI / 2) + localOuterY * Math.cos(midAngle + Math.PI / 2));
-					// dx = x - midX; x = localX + midX -> dx = localX + midX - midX -> dx = localX
-					// dy = y - midY; y = localY + midY -> dy = localY + midY - midY -> dy = localY
-
-					//Rotated inner x and y
-					int innerX = (int) Math.round(midX - localInnerY * Math.sin(midAngle + Math.PI / 2));
-					int innerY = (int) Math.round(midY + localInnerY * Math.cos(midAngle + Math.PI / 2));
-
-					//Check if inner space was clicked
-					if (getDistance(mouseX, mouseY, outerX, outerY) <= spaceRadius) {
-						clickedSpace.setOuterBrush(dentalScheme.getSelectedBrush());
-						log.info("Assigned outer brush {} to Space position {}", dentalScheme.getSelectedBrush(), clickedSpace.getPosition());
-						return true;
-						//Check if outer space was clicked
-					} else if (getDistance(mouseX, mouseY, innerX, innerY) <= spaceRadius) {
-						clickedSpace.setInnerBrush(dentalScheme.getSelectedBrush());
-						log.info("Assigned inner brush {} to Space position {}", dentalScheme.getSelectedBrush(), clickedSpace.getPosition());
-						return true;
+		// Check Upper Jaw click targets
+		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, false)
+				.ifPresentOrElse( hit -> {
+					Space space = mouth.getSpace(hit.position());
+					if (hit.isInner()){
+						space.setInnerBrush(selectedBrush);
+					} else {
+						space.setOuterBrush(selectedBrush);
 					}
-				}
-			}
-		}
 
-		return false;
-	}
-
-	/**
-	 * Calculates the Euclidean distance between two points.
-	 *
-	 * @param x1 is the x-coordinate of the first point;
-	 * @param y1 is the y-coordinate of the first point;
-	 * @param x2 is the x-coordinate of the second point;
-	 * @param y2 is the y-coordinate of the second point.
-	 * @return the distance between the points.
-	 */
-	private double getDistance(int x1, int y1, int x2, int y2) {
-		return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+					log.debug("""
+								Clicked tooth: [
+									position: '{}',
+									inner: '{}',
+									brush: '{}'
+								].""", space.getPosition(), hit.isInner(), hit.isInner()? space.getInnerBrush() : space.getOuterBrush());
+					this.repaint();
+				}, () -> log.trace("Click at x={}, y={} did not target any space on the lower jaw.", mouseX, mouseY));
 	}
 
 	/**
@@ -311,11 +220,11 @@ public class DentalPanel extends JPanel implements Printable {
 		int centerY = this.getHeight() / 2;
 
 		// Draw Upper Jaw (Angles from roughly 170 degrees to 10 degrees) and it is wider than lower jaw (radius X and Y smaller)
-		this.drawJaw(g2d, true, centerX, centerY - 40, startAngleUpperJaw, endAngleUpperJaw);
+		this.drawJaw(g2d, true, centerX, centerY - 40, START_ANGLE_UPPER, END_ANGLE_UPPER);
 
 
 		// Draw Lower Jaw (Angles from roughly 190 degrees to 350 degrees)
-		this.drawJaw(g2d, false, centerX, centerY + 40, startAngleLowerJaw, endAngleLowerJaw);
+		this.drawJaw(g2d, false, centerX, centerY + 40, START_ANGLE_LOWER, END_ANGLE_LOWER);
 
 		g2d.setFont(new Font("Arial", Font.BOLD, 25));
 		g2d.setColor(Color.DARK_GRAY);
@@ -328,26 +237,26 @@ public class DentalPanel extends JPanel implements Printable {
 		String topText = "Верхняя челюсть";
 		int topTextWidth = fm.stringWidth(topText);
 		int topTextX = centerX - topTextWidth / 2;
-		int topTextY = centerY - radiusY - padding;
+		int topTextY = centerY - RADIUS_Y - padding;
 		g2d.drawString(topText, topTextX, topTextY);
 
 		// Lower Jaw marker definition
 		String bottomText = "Нижняя челюсть";
 		int bottomTextWidth = fm.stringWidth(bottomText);
 		int bottomTextX = centerX - bottomTextWidth / 2;
-		int bottomTextY = centerY + radiusY + padding + fm.getAscent();
+		int bottomTextY = centerY + RADIUS_Y + padding + fm.getAscent();
 		g2d.drawString(bottomText, bottomTextX, bottomTextY);
 
 		// Left side marker
 		String leftText = "Лево";
 		int leftTextWidth = fm.stringWidth(leftText);
-		int leftTextX = centerX - radiusX - leftTextWidth / 2;
+		int leftTextX = centerX - RADIUS_X - leftTextWidth / 2;
 		g2d.drawString(leftText, leftTextX, centerY);
 
 		//Right side marker
 		String rightText = "Право";
 		int rightTextWidth = fm.stringWidth(rightText);
-		int rightTextX = centerX + radiusX - rightTextWidth / 2;
+		int rightTextX = centerX + RADIUS_Y - rightTextWidth / 2;
 		g2d.drawString(rightText, rightTextX, centerY);
 	}
 
@@ -374,8 +283,8 @@ public class DentalPanel extends JPanel implements Printable {
 			double currentAngle = startAngle + angleStep * (double) i;
 
 			// Calculate x and y using polar equations for an ellipse
-			int x = (int) (centerX + radiusX * Math.cos(currentAngle));
-			int y = (int) (centerY + radiusY * Math.sin(currentAngle));
+			int x = (int) (centerX + RADIUS_X * Math.cos(currentAngle));
+			int y = (int) (centerY + RADIUS_Y * Math.sin(currentAngle));
 
 			this.drawTooth(g2d, tooth, x, y, currentAngle);
 
@@ -390,8 +299,8 @@ public class DentalPanel extends JPanel implements Printable {
 
 				if (Objects.nonNull(dentalScheme.getSelectedBrush()) || (Objects.nonNull(space.getOuterBrush()) || Objects.nonNull(space.getInnerBrush()))) {
 					double midAngle = currentAngle + angleStep / 2;
-					int midX = (int) (centerX + radiusX * Math.cos(midAngle));
-					int midY = (int) (centerY + radiusY * Math.sin(midAngle));
+					int midX = (int) (centerX + RADIUS_X * Math.cos(midAngle));
+					int midY = (int) (centerY + RADIUS_Y * Math.sin(midAngle));
 
 					this.drawSpaces(g2d, space, midX, midY, midAngle);
 				}
@@ -426,12 +335,12 @@ public class DentalPanel extends JPanel implements Printable {
 
 		// Draw the tooth shape (centered on 0,0 since we translated)
 		g2d.setColor(tooth.isAvailable() ? basicToothColor : basicToothColor.darker());
-		g2d.fillRoundRect(-toothWidth / 2, -toothHeight / 2, toothWidth, toothHeight, 20, 20);
+		g2d.fillRoundRect(-TOOTH_WIDTH / 2, -TOOTH_HEIGHT / 2, TOOTH_WIDTH, TOOTH_HEIGHT, 20, 20);
 
 		// Draw the outline
 		g2d.setColor(Color.BLACK);
 		g2d.setStroke(new BasicStroke(2.5F));
-		g2d.drawRoundRect(-toothWidth / 2, -toothHeight / 2, toothWidth, toothHeight, 20, 20);
+		g2d.drawRoundRect(-TOOTH_WIDTH / 2, -TOOTH_HEIGHT / 2, TOOTH_WIDTH, TOOTH_HEIGHT, 20, 20);
 
 		// Draw the FDI position text
 		String posText = String.valueOf(tooth.getPosition());
@@ -492,12 +401,12 @@ public class DentalPanel extends JPanel implements Printable {
 
 		// Draw outer space
 		if (Objects.isNull(space.getInnerBrush())) {
-			drawSpace(g2d, basicSpaceX, outerSpaceY, getColor.apply(space.getOuterBrush()), stroke);
+			drawSpace(g2d, BASIC_SPACE_X, OUTER_SPACE_Y, getColor.apply(space.getOuterBrush()), stroke);
 		}
 
 		// Draw inner space
 		if (Objects.isNull(space.getOuterBrush())) {
-			drawSpace(g2d, basicSpaceX, innerSpaceY, getColor.apply(space.getInnerBrush()), stroke);
+			drawSpace(g2d, BASIC_SPACE_X, INNER_SPACE_Y, getColor.apply(space.getInnerBrush()), stroke);
 		}
 
 		// Draw the FDI position text

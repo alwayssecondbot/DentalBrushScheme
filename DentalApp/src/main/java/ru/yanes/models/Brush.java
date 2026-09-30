@@ -1,4 +1,4 @@
-package ru.yanes.data;
+package ru.yanes.models;
 
 import lombok.Getter;
 

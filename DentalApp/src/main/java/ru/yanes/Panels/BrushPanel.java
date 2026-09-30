@@ -3,7 +3,9 @@ package ru.yanes.Panels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yanes.DentalScheme;
-import ru.yanes.data.Brush;
+import ru.yanes.controllers.DentalGeometry;
+import static ru.yanes.config.DentalGeometryConstants.BRUSH_DIAMETER;
+import ru.yanes.models.Brush;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.Objects;
+
+
 
 /**
  * A panel for displaying and selecting toothbrush types.
@@ -22,14 +26,6 @@ public class BrushPanel extends JPanel {
 	 * Logger engine.
 	 */
 	private final Logger log = LoggerFactory.getLogger(BrushPanel.class);
-	/**
-	 * Link to the main panel to notify about the need to redraw after selecting a brush.
-	 */
-	private final DentalPanel dentalPanel;
-	/**
-	 * The diameter of the circle representing the brush, in pixels.
-	 */
-	private final int brushDiameter = 70;
 	/** Link to the panel for setting {@code selectedBrush} */
 	private final DentalScheme dentalScheme;
 	/**Font family name which is used for the panel.*/
@@ -44,8 +40,7 @@ public class BrushPanel extends JPanel {
 	 * @param preferredSize preferred size of the panel: [0] - width, [1] - height;
 	 * @param font font family name of the panel.
 	 */
-	public BrushPanel(DentalScheme dentalScheme, DentalPanel dentalPanel, Color background, int[] preferredSize, String font) {
-		this.dentalPanel = dentalPanel;
+	public BrushPanel(DentalScheme dentalScheme, Color background, int[] preferredSize, String font) {
 		this.dentalScheme = dentalScheme;
 		this.font = new Font(font, Font.BOLD, 14);
 
@@ -68,11 +63,10 @@ public class BrushPanel extends JPanel {
 						];
 						Class fields: [
 							log: '{}',
-							dentalPanel: '{}'
-							brushDiameter: '{}',
-							dentalScheme: '{}'
+							dentalScheme: '{}',
+							font: '{}'
 						].""",
-				this.getPreferredSize(), this.getBackground(), this.log, this.dentalPanel, this.brushDiameter, this.dentalScheme);
+				this.getPreferredSize(), this.getBackground(), this.log, this.dentalScheme, this.font);
 	}
 
 	/**
@@ -84,71 +78,21 @@ public class BrushPanel extends JPanel {
 	 */
 	private void handlePanelClick(int mouseX, int mouseY) {
 		log.debug("handlePanelClick: [ mouseX: {}, mouseY: {} ].", mouseX, mouseY);
-		int centerX = getWidth() / 2;
-		int centerY = getHeight() / 2;
 
 		// Check Brush click target
-		if (checkBrushClick(mouseX, mouseY, centerX, centerY)) {
-			repaint();
-			dentalPanel.repaint();
-			return;
-		}
+		log.debug("CheckBrushClick: [ mouseX: '{}', mouseY: '{}' ].", mouseX, mouseY);
 
-		log.trace("Click at x={}, y={} did not target any brush.", mouseX, mouseY);
-	}
-
-	/**
-	 * Checks whether the click hits one of the brushes. If a hit is detected,
-	 * toggles the state of the selected brush ({@code selectedBrush}): if the brush was already
-	 * selected, deselects it; otherwise, selects it.
-	 *
-	 * @param mouseX  : x-coordinate of the click;
-	 * @param mouseY  : y-coordinate of the click;
-	 * @param centerX : x-coordinate of the panel center (brush axis);
-	 * @param centerY : y-coordinate of the panel center (not used in the current logic).
-	 * @return {@code true} if the click was processed (hit a brush), otherwise {@code false}.
-	 */
-	private boolean checkBrushClick(int mouseX, int mouseY, int centerX, int centerY) {
-		log.debug("CheckBrushClick: [ mouseX: '{}', mouseY: '{}', centerX: '{}', centerY: '{}' ].", mouseX, mouseY, centerX, centerY);
-
-		int brushCount = Brush.values().length;
-
-		for (int i = 1; i <= brushCount; i++) {
-
-			int brushPos = this.getHeight() / (brushCount + 1) * i;
-
-			//If x,y of mouse in brush
-			if (getDistance(centerX, brushPos, mouseX, mouseY) <= (double) brushDiameter / 2) {
-				Brush clickedBrush = Brush.values()[i - 1];
-
-				//Then if brush has been selected - unpin, if it hasn't - pin
-				if (Objects.equals(clickedBrush, dentalScheme.getSelectedBrush())) {
-					log.info("Deselected brush: [ diameter: '{}' ].", clickedBrush.getDiameter());
-					dentalScheme.setSelectedBrush(null);
-				} else {
-					log.info("Selected brush: [ diameter: '{}' ].", clickedBrush.getDiameter());
-					dentalScheme.setSelectedBrush(clickedBrush);
-				}
-
-				return true;
+		DentalGeometry.checkBrushClick(mouseX, mouseY, this.getWidth(), this.getHeight()).ifPresentOrElse(brush -> {
+			Brush selectedBrush = dentalScheme.getSelectedBrush();
+			if (Objects.equals(brush, selectedBrush)) {
+				log.info("Deselected brush: [ diameter: '{}' ].", brush.getDiameter());
+				dentalScheme.setSelectedBrush(null);
+			} else {
+				log.info("Selected brush: [ diameter: '{}' ].", brush.getDiameter());
+				dentalScheme.setSelectedBrush(brush);
 			}
-
-		}
-
-		return false;
-	}
-
-	/**
-	 * Calculates the Euclidean distance between two points.
-	 *
-	 * @param x1 is the x-coordinate of the first point;
-	 * @param y1 is the y-coordinate of the first point;
-	 * @param x2 is the x-coordinate of the second point;
-	 * @param y2 is the y-coordinate of the second point.
-	 * @return the distance between the points.
-	 */
-	private double getDistance(int x1, int y1, int x2, int y2) {
-		return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+			dentalScheme.repaint();
+		}, () -> log.trace("Click at x={}, y={} did not target any brush.", mouseX, mouseY) );
 	}
 
 	/**
@@ -181,18 +125,18 @@ public class BrushPanel extends JPanel {
 			if (Objects.equals(brush, dentalScheme.getSelectedBrush())) {
 				g2d.setColor(Color.LIGHT_GRAY);
 				g2d.setStroke(new BasicStroke(10F));
-				g2d.drawOval(-brushDiameter / 2, -brushDiameter / 2, brushDiameter + 5, brushDiameter + 5);
+				g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER + 5, BRUSH_DIAMETER + 5);
 			}
 
 			// Draw the brush shape (centered on 0,0 since we translated)
 			g2d.setColor(brush.getColor());
-			g2d.fillOval(-brushDiameter / 2, -brushDiameter / 2, brushDiameter, brushDiameter);
+			g2d.fillOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER, BRUSH_DIAMETER);
 
 
 			// Draw the outline
 			g2d.setColor(Color.BLACK);
 			g2d.setStroke(new BasicStroke(2.5F));
-			g2d.drawOval(-brushDiameter / 2, -brushDiameter / 2, brushDiameter, brushDiameter);
+			g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER, BRUSH_DIAMETER);
 
 			// Draw brush diameter
 			String posText = String.valueOf(brush.getDiameter());
