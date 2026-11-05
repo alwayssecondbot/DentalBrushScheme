@@ -11,7 +11,7 @@
         <file>logs/DentalApp.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- Daily -->
-            <fileNamePattern>logs/myapp.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/DentalApp.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- 30 day storage -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>

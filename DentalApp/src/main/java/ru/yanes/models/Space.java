@@ -26,7 +26,7 @@ public class Space {
 	private final Tooth leftTooth;
 	/** Right tooth that limits the gap (unchangeable). */
 	private final Tooth rightTooth;
-	/** The position of the space in the general order (index in the {@link Mouth#getSpaces()} array). */
+	/** The position of the space in the general order (index in the {@link Mouth#spaces} array). */
 	private final int position;
 	/** The internal brush set in the span. May be {@code null} if not set. */
 	private Brush innerBrush = null;

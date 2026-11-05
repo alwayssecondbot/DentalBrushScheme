@@ -89,7 +89,7 @@ public class DentalScheme extends JFrame {
 //		commentPanel.setName("commentPanel");
 //		this.add(commentPanel, BorderLayout.WEST);
 
-		toolPanel = new ToolPanel(dentalPanel, defaultBackground, brushPanelPreferSize, basicFont);
+		toolPanel = new ToolPanel(dentalPanel, defaultBackground, toolPanelPreferSize, basicFont);
 		toolPanel.setName("toolPanel");
 
 		this.add(toolPanel, BorderLayout.NORTH);

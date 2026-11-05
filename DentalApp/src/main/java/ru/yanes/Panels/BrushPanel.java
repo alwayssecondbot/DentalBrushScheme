@@ -35,7 +35,6 @@ public class BrushPanel extends JPanel {
 	 * Creates a brush selection panel, configures the background, dimensions, and click handler.
 	 *
 	 * @param dentalScheme reference to the main class with {@code selectedBrush} field;
-	 * @param dentalPanel reference to the main panel for display refresh;
 	 * @param background background color of the panel;
 	 * @param preferredSize preferred size of the panel: [0] - width, [1] - height;
 	 * @param font font family name of the panel.

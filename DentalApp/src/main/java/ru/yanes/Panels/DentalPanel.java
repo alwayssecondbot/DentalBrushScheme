@@ -150,25 +150,29 @@ public class DentalPanel extends JPanel implements Printable {
 					this.repaint();
 				}, () -> log.trace("Click at x={}, y={} did not target any tooth on the upper jaw.", mouseX, mouseY));
 
-		// Check Upper Jaw click targets
-		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, true)
-						.ifPresentOrElse( hit -> {
-							Space space = mouth.getSpace(hit.position());
+		if (Objects.nonNull(selectedBrush)) {
+			// Check Upper Jaw click targets
+			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, true)
+					.ifPresentOrElse( hit -> {
+						Space space = mouth.getSpace(hit.position());
+						if (space.isAvailable()) {
 							if (hit.isInner()){
 								space.setInnerBrush(selectedBrush);
 							} else {
 								space.setOuterBrush(selectedBrush);
 							}
-
-							log.debug("""
-								Clicked tooth: [
+						}
+						log.debug("""
+								Clicked space: [
 									position: '{}',
 									inner: '{}',
 									brush: '{}'
 								].""", space.getPosition(), hit.isInner(), hit.isInner()? space.getInnerBrush() : space.getOuterBrush());
 
-							this.repaint();
-						}, () -> log.trace("Click at x={}, y={} did not target any space on the upper jaw.", mouseX, mouseY));
+						this.repaint();
+					}, () -> log.trace("Click at x={}, y={} did not target any space on the upper jaw.", mouseX, mouseY));
+		}
+
 
 		// Check Lower Jaw click targets
 		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY + 40, false)
@@ -184,24 +188,28 @@ public class DentalPanel extends JPanel implements Printable {
 					}, () -> log.trace("Click at x={}, y={} did not target any tooth on the lower jaw.", mouseX, mouseY));
 
 
-		// Check Upper Jaw click targets
-		DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, false)
-				.ifPresentOrElse( hit -> {
-					Space space = mouth.getSpace(hit.position());
-					if (hit.isInner()){
-						space.setInnerBrush(selectedBrush);
-					} else {
-						space.setOuterBrush(selectedBrush);
-					}
+		if (Objects.nonNull(selectedBrush)) {
+			// Check Lower Jaw click targets
+			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY + 40, false)
+					.ifPresentOrElse( hit -> {
+						Space space = mouth.getSpace(hit.position());
+						if (space.isAvailable()) {
+							if (hit.isInner()){
+								space.setInnerBrush(selectedBrush);
+							} else {
+								space.setOuterBrush(selectedBrush);
+							}
+						}
 
-					log.debug("""
-								Clicked tooth: [
+						log.debug("""
+								Clicked space: [
 									position: '{}',
 									inner: '{}',
 									brush: '{}'
 								].""", space.getPosition(), hit.isInner(), hit.isInner()? space.getInnerBrush() : space.getOuterBrush());
-					this.repaint();
-				}, () -> log.trace("Click at x={}, y={} did not target any space on the lower jaw.", mouseX, mouseY));
+						this.repaint();
+					}, () -> log.trace("Click at x={}, y={} did not target any space on the lower jaw.", mouseX, mouseY));
+		}
 	}
 
 	/**
@@ -258,7 +266,7 @@ public class DentalPanel extends JPanel implements Printable {
 		//Right side marker
 		String rightText = "Право";
 		int rightTextWidth = fm.stringWidth(rightText);
-		int rightTextX = centerX + RADIUS_Y - rightTextWidth / 2;
+		int rightTextX = centerX + RADIUS_X - rightTextWidth / 2;
 		g2d.drawString(rightText, rightTextX, centerY);
 	}
 
