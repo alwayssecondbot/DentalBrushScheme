@@ -2,10 +2,10 @@ package ru.yanes.Panels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.yanes.DentalScheme;
 import ru.yanes.controllers.DentalGeometry;
 import static ru.yanes.config.DentalGeometryConstants.BRUSH_DIAMETER;
 import ru.yanes.models.Brush;
+import ru.yanes.state.BrushSelection;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,20 +27,21 @@ public class BrushPanel extends JPanel {
 	 */
 	private final Logger log = LoggerFactory.getLogger(BrushPanel.class);
 	/** Link to the panel for setting {@code selectedBrush} */
-	private final DentalScheme dentalScheme;
+	private final BrushSelection brushSelection;
 	/**Font family name which is used for the panel.*/
 	private final Font font;
 
 	/**
 	 * Creates a brush selection panel, configures the background, dimensions, and click handler.
 	 *
-	 * @param dentalScheme reference to the main class with {@code selectedBrush} field;
+	 * @param brushSelection reference to the main class with {@code selectedBrush} field;
 	 * @param background background color of the panel;
 	 * @param preferredSize preferred size of the panel: [0] - width, [1] - height;
 	 * @param font font family name of the panel.
 	 */
-	public BrushPanel(DentalScheme dentalScheme, Color background, int[] preferredSize, String font) {
-		this.dentalScheme = dentalScheme;
+	public BrushPanel(BrushSelection brushSelection, Color background, int[] preferredSize, String font) {
+		this.brushSelection = brushSelection;
+		this.brushSelection.addListener(brush -> repaint());
 		this.font = new Font(font, Font.BOLD, 14);
 
 		this.setBackground(background);
@@ -62,10 +63,10 @@ public class BrushPanel extends JPanel {
 						];
 						Class fields: [
 							log: '{}',
-							dentalScheme: '{}',
+							brushSelection: '{}',
 							font: '{}'
 						].""",
-				this.getPreferredSize(), this.getBackground(), this.log, this.dentalScheme, this.font);
+				this.getPreferredSize(), this.getBackground(), this.log, this.brushSelection, this.font);
 	}
 
 	/**
@@ -81,17 +82,9 @@ public class BrushPanel extends JPanel {
 		// Check Brush click target
 		log.debug("CheckBrushClick: [ mouseX: '{}', mouseY: '{}' ].", mouseX, mouseY);
 
-		DentalGeometry.checkBrushClick(mouseX, mouseY, this.getWidth(), this.getHeight()).ifPresentOrElse(brush -> {
-			Brush selectedBrush = dentalScheme.getSelectedBrush();
-			if (Objects.equals(brush, selectedBrush)) {
-				log.info("Deselected brush: [ diameter: '{}' ].", brush.getDiameter());
-				dentalScheme.setSelectedBrush(null);
-			} else {
-				log.info("Selected brush: [ diameter: '{}' ].", brush.getDiameter());
-				dentalScheme.setSelectedBrush(brush);
-			}
-			dentalScheme.repaint();
-		}, () -> log.trace("Click at x={}, y={} did not target any brush.", mouseX, mouseY) );
+		DentalGeometry.checkBrushClick(mouseX, mouseY, this.getWidth(), this.getHeight()).ifPresentOrElse(
+                brushSelection::toggleSelection,
+				() -> log.trace("Click at x={}, y={} did not target any brush.", mouseX, mouseY) );
 	}
 
 	/**
@@ -121,7 +114,7 @@ public class BrushPanel extends JPanel {
 			// Translate the origin to our calculated x, y coordinates
 			g2d.translate(centerX, brushPos);
 
-			if (Objects.equals(brush, dentalScheme.getSelectedBrush())) {
+			if (Objects.equals(brush, brushSelection.getSelectedBrush())) {
 				g2d.setColor(Color.LIGHT_GRAY);
 				g2d.setStroke(new BasicStroke(10F));
 				g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER + 5, BRUSH_DIAMETER + 5);

@@ -3,12 +3,13 @@ package ru.yanes.Panels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.yanes.DentalScheme;
 import ru.yanes.controllers.DentalGeometry;
 import ru.yanes.models.Brush;
 import ru.yanes.models.Mouth;
 import ru.yanes.models.Space;
 import ru.yanes.models.Tooth;
+import ru.yanes.state.BrushSelection;
+
 import static ru.yanes.config.DentalGeometryConstants.*;
 
 import javax.swing.*;
@@ -22,7 +23,6 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.util.Objects;
 import java.util.function.Function;
-
 
 
 /**
@@ -48,8 +48,10 @@ public class DentalPanel extends JPanel implements Printable {
 	 * The color of panel background and empty spaces.
 	 */
 	private final Color background;
-	/** Link to the panel for setting {@code selectedBrush} */
-	private final DentalScheme dentalScheme;
+	/**
+	 * Link to the panel for setting {@code selectedBrush}
+	 */
+	private final BrushSelection brushSelection;
 	/**
 	 * Comment title text.
 	 */
@@ -68,15 +70,16 @@ public class DentalPanel extends JPanel implements Printable {
 	 * Creates the main panel, saves the mouth model, adds a comment text area
 	 * and a click handler for teeth and spaces.
 	 *
-	 * @param dentalScheme reference to the main class with {@code selectedBrush} field;
-	 * @param background background color of the panel;
-	 * @param font font family name of the panel.
+	 * @param brushSelection reference to the main class with {@code selectedBrush} field;
+	 * @param background     background color of the panel;
+	 * @param font           font family name of the panel.
 	 */
-	public DentalPanel(DentalScheme dentalScheme, Color background, String font) {
-		this.mouth = new Mouth();
+	public DentalPanel(BrushSelection brushSelection, Mouth mouth, Color background, String font) {
+		this.mouth = mouth;
 
 		this.background = background;
-		this.dentalScheme = dentalScheme;
+		this.brushSelection = brushSelection;
+		this.brushSelection.addListener(brush -> repaint());
 
 		this.setBackground(this.background);
 		this.setLayout(new GridBagLayout());
@@ -99,21 +102,21 @@ public class DentalPanel extends JPanel implements Printable {
 		});
 		log.info("DentalPanel initialized successfully.");
 		log.trace("""
-					Panel parameters: [
-						background: '{}',
-						layout: '{}'
-					];
-					Class fields: [
-						log: '{}',
-						mouth: '{}',
-						basicToothColor: '{}',
-						background: '{}'
-						dentalScheme: '{}',
-						comment: '{}',
-						commentAreaRowLimit: '{}',
-						commentAreaColumnLimit: '{}'
-					].""",
-				this.getBackground(), this.getLayout(), this.log, this.mouth, this.basicToothColor, this.background, this.dentalScheme,
+                        Panel parameters: [
+                        	background: '{}',
+                        	layout: '{}'
+                        ];
+                        Class fields: [
+                        	log: '{}',
+                        	mouth: '{}',
+                        	basicToothColor: '{}',
+                        	background: '{}'
+                        	brushSelection: '{}',
+                        	comment: '{}',
+                        	commentAreaRowLimit: '{}',
+                        	commentAreaColumnLimit: '{}'
+                        ].""",
+				this.getBackground(), this.getLayout(), this.log, this.mouth, this.basicToothColor, this.background, this.brushSelection,
 				this.comment, this.commentAreaRowLimit, this.commentAreaColumnLimit);
 	}
 
@@ -129,13 +132,13 @@ public class DentalPanel extends JPanel implements Printable {
 		int centerX = getWidth() / 2;
 		int centerY = getHeight() / 2;
 
-		Brush selectedBrush = dentalScheme.getSelectedBrush();
+		Brush selectedBrush = brushSelection.getSelectedBrush();
 		log.debug("""
-			HandlePanelClick: [
-				x: '{}',
-				y: '{}',
-				selectedBrush: '{}'
-		].""", mouseX, mouseY, selectedBrush);
+                	HandlePanelClick: [
+                		x: '{}',
+                		y: '{}',
+                		selectedBrush: '{}'
+                ].""", mouseX, mouseY, selectedBrush);
 
 		// Check Upper Jaw click targets
 		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY - 40, true)
@@ -143,31 +146,31 @@ public class DentalPanel extends JPanel implements Printable {
 					Tooth clickedTooth = mouth.getTooth(pos);
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
 					log.debug("""
-							Clicked tooth: [
-								FDI: '{}',
-								available: '{}'
-							].""", clickedTooth.getPosition(), clickedTooth.isAvailable());
+                            Clicked tooth: [
+                            	FDI: '{}',
+                            	available: '{}'
+                            ].""", clickedTooth.getPosition(), clickedTooth.isAvailable());
 					this.repaint();
 				}, () -> log.trace("Click at x={}, y={} did not target any tooth on the upper jaw.", mouseX, mouseY));
 
 		if (Objects.nonNull(selectedBrush)) {
 			// Check Upper Jaw click targets
 			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, true)
-					.ifPresentOrElse( hit -> {
+					.ifPresentOrElse(hit -> {
 						Space space = mouth.getSpace(hit.position());
 						if (space.isAvailable()) {
-							if (hit.isInner()){
+							if (hit.isInner()) {
 								space.setInnerBrush(selectedBrush);
 							} else {
 								space.setOuterBrush(selectedBrush);
 							}
 						}
 						log.debug("""
-								Clicked space: [
-									position: '{}',
-									inner: '{}',
-									brush: '{}'
-								].""", space.getPosition(), hit.isInner(), hit.isInner()? space.getInnerBrush() : space.getOuterBrush());
+                                Clicked space: [
+                                	position: '{}',
+                                	inner: '{}',
+                                	brush: '{}'
+                                ].""", space.getPosition(), hit.isInner(), hit.isInner() ? space.getInnerBrush() : space.getOuterBrush());
 
 						this.repaint();
 					}, () -> log.trace("Click at x={}, y={} did not target any space on the upper jaw.", mouseX, mouseY));
@@ -180,21 +183,21 @@ public class DentalPanel extends JPanel implements Printable {
 					Tooth clickedTooth = mouth.getTooth(pos);
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
 					log.debug("""
-							Clicked tooth: [
-								FDI: '{}',
-								available: '{}'
-							].""", clickedTooth.getPosition(), clickedTooth.isAvailable());
+                            Clicked tooth: [
+                            	FDI: '{}',
+                            	available: '{}'
+                            ].""", clickedTooth.getPosition(), clickedTooth.isAvailable());
 					this.repaint();
-					}, () -> log.trace("Click at x={}, y={} did not target any tooth on the lower jaw.", mouseX, mouseY));
+				}, () -> log.trace("Click at x={}, y={} did not target any tooth on the lower jaw.", mouseX, mouseY));
 
 
 		if (Objects.nonNull(selectedBrush)) {
 			// Check Lower Jaw click targets
 			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY + 40, false)
-					.ifPresentOrElse( hit -> {
+					.ifPresentOrElse(hit -> {
 						Space space = mouth.getSpace(hit.position());
 						if (space.isAvailable()) {
-							if (hit.isInner()){
+							if (hit.isInner()) {
 								space.setInnerBrush(selectedBrush);
 							} else {
 								space.setOuterBrush(selectedBrush);
@@ -202,11 +205,11 @@ public class DentalPanel extends JPanel implements Printable {
 						}
 
 						log.debug("""
-								Clicked space: [
-									position: '{}',
-									inner: '{}',
-									brush: '{}'
-								].""", space.getPosition(), hit.isInner(), hit.isInner()? space.getInnerBrush() : space.getOuterBrush());
+                                Clicked space: [
+                                	position: '{}',
+                                	inner: '{}',
+                                	brush: '{}'
+                                ].""", space.getPosition(), hit.isInner(), hit.isInner() ? space.getInnerBrush() : space.getOuterBrush());
 						this.repaint();
 					}, () -> log.trace("Click at x={}, y={} did not target any space on the lower jaw.", mouseX, mouseY));
 		}
@@ -307,7 +310,7 @@ public class DentalPanel extends JPanel implements Printable {
 					space = this.mouth.getSpace(start + i - 1);
 				}
 
-				if (Objects.nonNull(dentalScheme.getSelectedBrush()) || (Objects.nonNull(space.getOuterBrush()) || Objects.nonNull(space.getInnerBrush()))) {
+				if (Objects.nonNull(brushSelection.getSelectedBrush()) || (Objects.nonNull(space.getOuterBrush()) || Objects.nonNull(space.getInnerBrush()))) {
 					double midAngle = currentAngle + angleStep / 2;
 					int midX = (int) (centerX + RADIUS_X * Math.cos(midAngle));
 					int midY = (int) (centerY + RADIUS_Y * Math.sin(midAngle));
