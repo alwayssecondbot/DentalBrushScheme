@@ -1,7 +1,5 @@
 package ru.yanes.Panels;
 
-import ru.yanes.DentalScheme;
-
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.text.PlainDocument;
