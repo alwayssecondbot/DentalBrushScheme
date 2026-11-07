@@ -79,7 +79,7 @@ public class DentalPanel extends JPanel implements Printable {
 
 		this.background = background;
 		this.brushSelection = brushSelection;
-		this.brushSelection.addListener(brush -> repaint());
+		this.brushSelection.addListener(ignored -> repaint());
 
 		this.setBackground(this.background);
 		this.setLayout(new GridBagLayout());

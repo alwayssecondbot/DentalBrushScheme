@@ -41,7 +41,7 @@ public class BrushPanel extends JPanel {
 	 */
 	public BrushPanel(BrushSelection brushSelection, Color background, int[] preferredSize, String font) {
 		this.brushSelection = brushSelection;
-		this.brushSelection.addListener(brush -> repaint());
+		this.brushSelection.addListener(ignored -> repaint());
 		this.font = new Font(font, Font.BOLD, 14);
 
 		this.setBackground(background);
