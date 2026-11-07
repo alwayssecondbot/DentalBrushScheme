@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ClaudeCodeTabState">
+    <option name="tabSessions">
+      <map>
+        <entry key="0">
+          <value>
+            <TabSessionState>
+              <option name="projectPath" value="D:\JetBrains\IdeaProjects\DentalBrushScheme" />
+              <option name="provider" value="claude" />
+              <option name="sessionId" value="87f4f5fd-f1df-4a0d-8272-616c97ea6544" />
+              <option name="cwd" value="D:\JetBrains\IdeaProjects\DentalBrushScheme" />
+              <option name="model" value="claude-opus-5-5[1m]" />
+              <option name="permissionMode" value="default" />
+            </TabSessionState>
+          </value>
+        </entry>
+        <entry key="1">
+          <value>
+            <TabSessionState>
+              <option name="projectPath" value="D:\JetBrains\IdeaProjects\DentalBrushScheme" />
+              <option name="provider" value="claude" />
+              <option name="sessionId" value="321de806-1b28-4ccb-824c-deddb4899e58" />
+              <option name="cwd" value="D:\JetBrains\IdeaProjects\DentalBrushScheme" />
+              <option name="model" value="claude-opus-5-5[1m]" />
+              <option name="permissionMode" value="default" />
+            </TabSessionState>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="tabCount" value="2" />
+  </component>
+</project>
