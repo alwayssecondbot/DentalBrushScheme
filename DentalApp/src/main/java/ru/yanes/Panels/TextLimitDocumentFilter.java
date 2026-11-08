@@ -11,6 +11,9 @@ import javax.swing.text.DocumentFilter;
  * comment field with a fixed number of lines and characters. If inserting or replacing
  * text would cause either limit to be exceeded, the operation is rejected.
  * <p>
+ * Only explicit line breaks ({@code '\n'}) are counted as lines; lines produced by automatic
+ * word wrapping in a {@link javax.swing.JTextArea} are not taken into account.
+ * <p>
  * The class extends {@link DocumentFilter} and overrides its methods
  * {@link #insertString(FilterBypass, int, String, AttributeSet)} and
  * {@link #replace(FilterBypass, int, int, String, AttributeSet)}.
@@ -24,8 +27,8 @@ public class TextLimitDocumentFilter extends DocumentFilter {
 	/**
 	 * Creates a filter with the specified limits.
 	 *
-	 * @param rows maximum number of rows
-	 * @param chars maximum number of characters
+	 * @param rows maximum number of rows;
+	 * @param chars maximum number of characters.
 	 */
 	TextLimitDocumentFilter(int rows, int chars) {
 		this.rowLimit = rows;
@@ -38,10 +41,10 @@ public class TextLimitDocumentFilter extends DocumentFilter {
 	 * If the limits are met, calls the parent class implementation.
 	 * Otherwise, the operation is ignored (the text is not changed).
 	 *
-	 * @param fb : {@link FilterBypass} object allowing the parent method to be called.
-	 * @param offset : insertion position.
-	 * @param string : string to insert.
-	 * @param attr : set of attributes of the inserted text.
+	 * @param fb {@link FilterBypass} object allowing the parent method to be called;
+	 * @param offset insertion position;
+	 * @param string string to insert;
+	 * @param attr set of attributes of the inserted text.
 	 * @throws BadLocationException if the insertion position is invalid.
 	 */
 	@Override
@@ -54,17 +57,17 @@ public class TextLimitDocumentFilter extends DocumentFilter {
 	}
 
 	/**
-	 * Переопределённый метод замены текста. Проверяет, что после замены
-	 * общее количество символов и строк не превысит установленные лимиты.
-	 * Если лимиты соблюдены, вызывает реализацию родительского класса,
-	 * иначе операция игнорируется.
+	 * Overridden text replacement method. Checks that after the replacement
+	 * the total number of characters and lines does not exceed the set limits.
+	 * If the limits are met, calls the parent class implementation.
+	 * Otherwise, the operation is ignored (the text is not changed).
 	 *
-	 * @param fb     объект {@link FilterBypass}, позволяющий вызвать родительский метод
-	 * @param offset начальная позиция заменяемого диапазона
-	 * @param length длина заменяемого диапазона
-	 * @param text   новый текст для замены
-	 * @param attrs  набор атрибутов нового текста
-	 * @throws BadLocationException если позиция или диапазон некорректны
+	 * @param fb {@link FilterBypass} object allowing the parent method to be called;
+	 * @param offset start position of the replaced range;
+	 * @param length length of the replaced range;
+	 * @param text new text to insert instead of the range;
+	 * @param attrs set of attributes of the new text.
+	 * @throws BadLocationException if the position or the range is invalid.
 	 */
 	@Override
 	public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
@@ -81,8 +84,8 @@ public class TextLimitDocumentFilter extends DocumentFilter {
 	 * An empty line is counted as 0 lines; otherwise, the number of lines is equal to
 	 * the number of line feed characters {@code '\n'} plus one.
 	 *
-	 * @param text - the text to count lines for
-	 * @return the number of lines in the text
+	 * @param text the text to count lines for.
+	 * @return the number of lines in the text.
 	 */
 	private int lineCount(String text) {
 		int count = text.isEmpty() ? 0 : 1;

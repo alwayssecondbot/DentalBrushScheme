@@ -30,6 +30,11 @@ import java.util.function.Function;
  * as well as a comment field. Implements the {@link Printable} interface for printing.
  * Handles clicks on teeth (toggle accessibility) and spaces
  * (set the selected toothbrush).
+ * <p>
+ * The panel does not own its state: the {@link Mouth} model and the {@link BrushSelection} are passed
+ * to the constructor. The panel subscribes to {@link BrushSelection} and repaints itself on every change,
+ * because the spaces are shown only while a brush is selected or already placed in them.
+ * Hit-testing of clicks is delegated to {@link DentalGeometry}.
  */
 public class DentalPanel extends JPanel implements Printable {
 	/**
@@ -41,7 +46,7 @@ public class DentalPanel extends JPanel implements Printable {
 	 */
 	private final Color basicToothColor = Color.WHITE;
 	/**
-	 * Mouth model containing teeth and spaces.
+	 * Mouth model containing teeth and spaces. It is passed from outside and changed on clicks.
 	 */
 	private final Mouth mouth;
 	/**
@@ -49,7 +54,7 @@ public class DentalPanel extends JPanel implements Printable {
 	 */
 	private final Color background;
 	/**
-	 * Link to the panel for setting {@code selectedBrush}
+	 * Shared state of the selected brush: read on clicks and when the spaces are painted.
 	 */
 	private final BrushSelection brushSelection;
 	/**
@@ -68,11 +73,13 @@ public class DentalPanel extends JPanel implements Printable {
 
 	/**
 	 * Creates the main panel, saves the mouth model, adds a comment text area
-	 * and a click handler for teeth and spaces.
+	 * and a click handler for teeth and spaces, and subscribes the panel to repaint
+	 * on every change of {@code brushSelection}.
 	 *
-	 * @param brushSelection reference to the main class with {@code selectedBrush} field;
-	 * @param background     background color of the panel;
-	 * @param font           font family name of the panel.
+	 * @param brushSelection shared state of the selected brush;
+	 * @param mouth mouth model with teeth and spaces to display and change;
+	 * @param background background color of the panel;
+	 * @param font font family name of the panel.
 	 */
 	public DentalPanel(BrushSelection brushSelection, Mouth mouth, Color background, String font) {
 		this.mouth = mouth;
@@ -110,7 +117,7 @@ public class DentalPanel extends JPanel implements Printable {
                         	log: '{}',
                         	mouth: '{}',
                         	basicToothColor: '{}',
-                        	background: '{}'
+                        	background: '{}',
                         	brushSelection: '{}',
                         	comment: '{}',
                         	commentAreaRowLimit: '{}',
@@ -122,7 +129,10 @@ public class DentalPanel extends JPanel implements Printable {
 
 	/**
 	 * Handles a mouse click on the panel. First, it checks the upper jaw, then the lower.
-	 * If a tooth or gap is hit, it causes the panel to be redrawn.
+	 * <p>
+	 * A click on a tooth toggles its availability. A click on a part of a space sets the selected brush
+	 * to this part, but only if a brush is selected and the space is available.
+	 * If a tooth or space is hit, the panel is redrawn.
 	 *
 	 * @param mouseX is the x-coordinate of the click;
 	 * @param mouseY is the y-coordinate of the click.
@@ -216,8 +226,8 @@ public class DentalPanel extends JPanel implements Printable {
 	}
 
 	/**
-	 * Renders the upper and lower jaws, as well as the labels "Upper Jaw,"
-	 * "Lower Jaw," "Left," and "Right." Enables antialiasing for high-quality rendering.
+	 * Renders the upper and lower jaws, as well as the labels "Upper Jaw",
+	 * "Lower Jaw", "Left" and "Right". Enables antialiasing for high-quality rendering.
 	 *
 	 * @param g graphics context.
 	 */
@@ -462,9 +472,9 @@ public class DentalPanel extends JPanel implements Printable {
 	 * Creates an image of the panel, scales it to the printable area
 	 * and outputs it to the page. Only one page is supported.
 	 *
-	 * @param graphics   : the printer's graphics context;
-	 * @param pageFormat : the page format;
-	 * @param pageIndex  : the page index (0 is the only page).
+	 * @param graphics the printer's graphics context;
+	 * @param pageFormat the page format;
+	 * @param pageIndex the page index (0 is the only page).
 	 * @return {@link Printable#PAGE_EXISTS} if the page was successfully rendered,
 	 * {@link Printable#NO_SUCH_PAGE} if a non-existent page was requested.
 	 * @throws PrinterException if a printing error occurs.

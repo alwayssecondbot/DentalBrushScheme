@@ -20,21 +20,25 @@ import java.util.Objects;
  * A panel for displaying and selecting toothbrush types.
  * Brushes are drawn vertically as colored circles with their diameters indicated.
  * Clicking on a brush selects or deselects it.
+ * <p>
+ * The selection is stored in a shared {@link BrushSelection}. The panel subscribes to it
+ * and repaints itself on every change, so it does not need to know about other panels.
  */
 public class BrushPanel extends JPanel {
 	/**
 	 * Logger engine.
 	 */
 	private final Logger log = LoggerFactory.getLogger(BrushPanel.class);
-	/** Link to the panel for setting {@code selectedBrush} */
+	/** Shared state of the selected brush: toggled on click and read when the panel is painted. */
 	private final BrushSelection brushSelection;
-	/**Font family name which is used for the panel.*/
+	/** Font which is used for the brush diameter labels. */
 	private final Font font;
 
 	/**
-	 * Creates a brush selection panel, configures the background, dimensions, and click handler.
+	 * Creates a brush selection panel, configures the background, dimensions, and click handler,
+	 * and subscribes the panel to repaint on every change of {@code brushSelection}.
 	 *
-	 * @param brushSelection reference to the main class with {@code selectedBrush} field;
+	 * @param brushSelection shared state of the selected brush;
 	 * @param background background color of the panel;
 	 * @param preferredSize preferred size of the panel: [0] - width, [1] - height;
 	 * @param font font family name of the panel.
@@ -70,8 +74,9 @@ public class BrushPanel extends JPanel {
 	}
 
 	/**
-	 * Handles a mouse click on the panel. Checks whether the click hits one of the brushes,
-	 * and redraws the panel and the main panel if necessary.
+	 * Handles a mouse click on the panel. Checks whether the click hits one of the brushes
+	 * and, if so, toggles its selection in {@link BrushSelection}. Repainting of the panels
+	 * is triggered by the {@link BrushSelection} listeners.
 	 *
 	 * @param mouseX is the x-coordinate of the click;
 	 * @param mouseY is the y-coordinate of the click.
@@ -83,7 +88,7 @@ public class BrushPanel extends JPanel {
 		log.debug("CheckBrushClick: [ mouseX: '{}', mouseY: '{}' ].", mouseX, mouseY);
 
 		DentalGeometry.checkBrushClick(mouseX, mouseY, this.getWidth(), this.getHeight()).ifPresentOrElse(
-                brushSelection::toggleSelection,
+				brushSelection::toggleSelection,
 				() -> log.trace("Click at x={}, y={} did not target any brush.", mouseX, mouseY) );
 	}
 

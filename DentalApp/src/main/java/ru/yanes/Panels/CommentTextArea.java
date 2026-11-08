@@ -124,12 +124,12 @@ public class CommentTextArea extends JTextArea {
 		 * Draws a rounded rectangle border around the component.
 		 * Enables anti-aliasing for smooth curves.
 		 *
-		 * @param c : The component for which to draw the border;
-		 * @param g : The graphics context;
-		 * @param x : The x-coordinate of the upper-left corner;
-		 * @param y : The y-coordinate of the upper-left corner;
-		 * @param width : The width of the drawing area;
-		 * @param height : The height of the drawing area.
+		 * @param c the component for which to draw the border;
+		 * @param g the graphics context;
+		 * @param x the x-coordinate of the upper-left corner;
+		 * @param y the y-coordinate of the upper-left corner;
+		 * @param width the width of the drawing area;
+		 * @param height the height of the drawing area.
 		 */
 		@Override
 		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {

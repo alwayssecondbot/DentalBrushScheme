@@ -25,7 +25,7 @@ public class Tooth {
 	 * Creates a tooth with the specified position. Accessibility is set automatically:
 	 * wisdom teeth (positions 18, 28, 38, 48) are created inaccessible, all others are created accessible.
 	 *
-	 * @param position is the tooth position number according to FDI
+	 * @param position is the tooth position number according to FDI.
 	 */
 	Tooth(int position) {
 		this.position = position;

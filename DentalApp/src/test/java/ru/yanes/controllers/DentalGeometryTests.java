@@ -20,25 +20,42 @@ import static ru.yanes.config.DentalGeometryConstants.*;
  * positions the production code computes (same formulas from
  * {@code DentalGeometryConstants}), then verify hit/miss behavior and the returned
  * indices/records, rather than guessing coordinates.
+ * <p>
+ * Note: because the helpers repeat the production formulas, these tests protect against
+ * accidental changes of the hit-testing logic, but do not prove that the formulas themselves are correct.
  */
 class DentalGeometryTests {
 
+	/** X-coordinate of the jaw arc center used in all tests. */
 	private static final int CENTER_X = 0;
+	/** Y-coordinate of the jaw arc center used in all tests. */
 	private static final int CENTER_Y = 0;
 
 	// ---- helpers that mirror DentalGeometry's private formulas ----
 
+	/**
+	 * Angle between two adjacent teeth on the given jaw.
+	 *
+	 * @param isUpperJaw {@code true} for the upper jaw, {@code false} for the lower jaw.
+	 * @return the angle step in radians.
+	 */
 	private static double angleStep(boolean isUpperJaw) {
 		double startAngle = isUpperJaw ? START_ANGLE_UPPER : START_ANGLE_LOWER;
 		double endAngle = isUpperJaw ? END_ANGLE_UPPER : END_ANGLE_LOWER;
 		return (endAngle - startAngle) / 15;
 	}
 
+	/**
+	 * Start angle of the arc of the given jaw.
+	 *
+	 * @param isUpperJaw {@code true} for the upper jaw, {@code false} for the lower jaw.
+	 * @return the start angle in radians.
+	 */
 	private static double startAngle(boolean isUpperJaw) {
 		return isUpperJaw ? START_ANGLE_UPPER : START_ANGLE_LOWER;
 	}
 
-	/** Pixel of tooth #i (0-14) on the given jaw, as computed by {@code checkToothClick}. */
+	/** Pixel of tooth #i (0-15) on the given jaw, as computed by {@code checkToothClick}. */
 	private static int[] toothPixel(boolean isUpperJaw, int i) {
 		double angle = startAngle(isUpperJaw) + angleStep(isUpperJaw) * i;
 		int x = (int) (CENTER_X + RADIUS_X * Math.cos(angle));
@@ -52,6 +69,14 @@ class DentalGeometryTests {
 		return currentAngle + angleStep(isUpperJaw) / 2;
 	}
 
+	/**
+	 * Pixel of the center of a space triangle, rotated the same way as in {@code checkSpaceClick}.
+	 *
+	 * @param isUpperJaw {@code true} for the upper jaw, {@code false} for the lower jaw;
+	 * @param i index of the space on the jaw (0-14);
+	 * @param localOffset local y-coordinate of the triangle center ({@code LOCAL_OUTER_Y} or {@code LOCAL_INNER_Y}).
+	 * @return the pixel as {@code [x, y]}.
+	 */
 	private static int[] spacePixel(boolean isUpperJaw, int i, double localOffset) {
 		double midAngle = spaceMidAngle(isUpperJaw, i);
 		int midX = (int) (CENTER_X + RADIUS_X * Math.cos(midAngle));
@@ -61,10 +86,12 @@ class DentalGeometryTests {
 		return new int[]{x, y};
 	}
 
+	/** Pixel of the center of the outer triangle of space #i (0-14) on the given jaw. */
 	private static int[] outerSpacePixel(boolean isUpperJaw, int i) {
 		return spacePixel(isUpperJaw, i, LOCAL_OUTER_Y);
 	}
 
+	/** Pixel of the center of the inner triangle of space #i (0-14) on the given jaw. */
 	private static int[] innerSpacePixel(boolean isUpperJaw, int i) {
 		return spacePixel(isUpperJaw, i, LOCAL_INNER_Y);
 	}
@@ -78,7 +105,7 @@ class DentalGeometryTests {
 	class CheckToothClick {
 
 		@Test
-		@DisplayName("Click at the exact tooth center on the upper jaw returns its FDI position")
+		@DisplayName("Click at the exact tooth center on the upper jaw returns its index")
 		void hitsFirstUpperTooth() {
 			int[] p = toothPixel(true, 0);
 			assertEquals(Optional.of(0),

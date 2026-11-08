@@ -6,8 +6,8 @@ import java.util.Arrays;
 /**
  * A class representing a model of the oral cavity: contains all the teeth and the spaces between them.
  * <p>
- * The teeth are stored in the {@link #teeth} array and are ordered according to the order
- * of the dental schema (upper jaw from left to right, then lower jaw from right to left).
+ * The teeth are stored in the {@link #teeth} array in the order of drawing on the dental schema:
+ * indices 0–15 are the upper jaw (FDI 28–21, then 11–18), indices 16–31 are the lower jaw (FDI 48–41, then 31–38).
  * The spaces are stored in the {@link #spaces} array; each space connects two adjacent teeth.
  * <p>
  * The numbering of the spaces has a peculiarity: there is no space between the last tooth of the upper jaw (18) and the first
@@ -18,18 +18,20 @@ import java.util.Arrays;
  */
 @Getter
 public class Mouth {
-	/** An array of all teeth. The order corresponds to the visual display on the diagram. */
+	/** An array of all teeth. The order corresponds to the order of drawing on the diagram (see the class description). */
 	private final Tooth[] teeth;
-	/** An array of all spaces between teeth. The length is 2 less than the number of teeth. */
+	/**
+	 * An array of all spaces between teeth. The length is 2 less than the number of teeth:
+	 * indices 0–14 are the upper jaw, indices 15–29 are the lower jaw.
+	 */
 	private final Space[] spaces;
 
 	/**
 	 * Creates a mouth model, initializing 32 teeth with fixed FDI positions
 	 * and 30 spaces between them. Wisdom teeth (18, 28, 38, 48) are created inaccessible.
 	 * <p>
-	 * Tooth positions are specified in traversal order: upper jaw from left to right
-	 * (28–18), then lower jaw from right to left (48–38). Spaces are created
-	 * for each pair of adjacent teeth, except for the pair "18–48" (the transition between the jaws).
+	 * Tooth positions are specified in traversal order: upper jaw (28–18), then lower jaw (48–38).
+	 * Spaces are created for each pair of adjacent teeth, except for the pair "18–48" (the transition between the jaws).
 	 */
 	public Mouth() {
 		int[] TEETH_POSITION = new int[] {28, 27, 26, 25, 24, 23, 22, 21, 11, 12, 13, 14, 15, 16, 17, 18, 48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38};
@@ -61,9 +63,9 @@ public class Mouth {
 	/**
 	 * Returns a tooth by its index in the {@link #teeth} array.
 	 *
-	 * @param pos is the tooth index (from 0 to {@code teeth.length - 1})
-	 * @return the tooth with the specified index
-	 * @throws IllegalArgumentException if {@code pos} is out of range
+	 * @param pos the tooth index (from 0 to {@code teeth.length - 1}), not the FDI number.
+	 * @return the tooth with the specified index.
+	 * @throws IllegalArgumentException if {@code pos} is out of range.
 	 */
 	public Tooth getTooth(int pos) {
 		if (pos >= 0 && pos < this.teeth.length) {
@@ -76,9 +78,9 @@ public class Mouth {
 	/**
 	 * Returns a space by its index in the {@link #spaces} array.
 	 *
-	 * @param pos is the space index (from 0 to {@code spaces.length - 1})
-	 * @return the space with the specified index
-	 * @throws IllegalArgumentException if {@code pos} is out of range
+	 * @param pos the space index (from 0 to {@code spaces.length - 1}).
+	 * @return the space with the specified index.
+	 * @throws IllegalArgumentException if {@code pos} is out of range.
 	 */
 	public Space getSpace(int pos) {
 		if (pos >= 0 && pos < this.spaces.length) {

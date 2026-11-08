@@ -22,7 +22,7 @@ public class ToolPanel extends JPanel {
 	 * Logger engine.
 	 */
 	private final Logger log = LoggerFactory.getLogger(ToolPanel.class);
-	/**Font family name which is used for the panel.*/
+	/** Font which is used for the tool buttons. */
 	private final Font font;
 
 	/**

@@ -13,10 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link Mouth}.
+ * <p>
+ * Checks the number and order of teeth, the connectivity of spaces (including the skipped
+ * transition between the jaws), index validation and {@link Mouth#resetAll()}.
  */
 class MouthTests {
 
-	/** Traversal order used by {@link Mouth}: upper jaw left→right, then lower jaw right→left. */
+	/** Traversal order of FDI positions used by {@link Mouth}: upper jaw (indices 0–15), then lower jaw (indices 16–31). */
 	private static final int[] EXPECTED_POSITIONS = {
 			28, 27, 26, 25, 24, 23, 22, 21, 11, 12, 13, 14, 15, 16, 17, 18,
 			48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38

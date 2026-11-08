@@ -13,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link Brush}.
+ * <p>
+ * Checks the set of declared brushes, their diameters and colors.
  */
 class BrushTests {
 
