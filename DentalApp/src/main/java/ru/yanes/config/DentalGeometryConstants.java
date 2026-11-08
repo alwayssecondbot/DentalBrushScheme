@@ -5,8 +5,8 @@ import java.util.Arrays;
 /**
  * Stores all visual and geometric metrics for rendering the jaw and teeth.
  * <p>
- * The constants are shared by the rendering code ({@link ru.yanes.Panels.DentalPanel},
- * {@link ru.yanes.Panels.BrushPanel}) and the hit-testing code ({@link ru.yanes.controllers.DentalGeometry}),
+ * The constants are shared by the rendering code ({@link ru.yanes.panels.DentalPanel},
+ * {@link ru.yanes.panels.BrushPanel}) and the hit-testing code ({@link ru.yanes.controllers.DentalGeometry}),
  * so a click is always checked against the same positions where the shapes are drawn.
  * All sizes are in pixels, all angles are in radians.
  */

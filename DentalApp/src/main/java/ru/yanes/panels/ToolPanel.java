@@ -1,4 +1,4 @@
-package ru.yanes.Panels;
+package ru.yanes.panels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package ru.yanes.Panels;
+package ru.yanes.panels;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;

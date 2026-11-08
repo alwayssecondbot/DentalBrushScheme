@@ -1,4 +1,4 @@
-package ru.yanes.Panels;
+package ru.yanes.panels;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
@@ -9,7 +9,7 @@ import java.awt.*;
  * A standalone side panel with a comment text area.
  * <p>
  * <b>Currently not used:</b> the comment field is embedded in the {@link DentalPanel} instead
- * (see {@link ru.yanes.Panels.CommentTextArea}). The panel is kept for a possible return to the side layout;
+ * (see {@link ru.yanes.panels.CommentTextArea}). The panel is kept for a possible return to the side layout;
  * its creation in {@link ru.yanes.DentalScheme} is commented out.
  * <p>
  * The panel contains its own inner copy of the comment area ({@link CommentTextArea})
@@ -68,7 +68,7 @@ class CommentPanel extends JPanel {
 	/**
 	 * Inner comment text area of the {@link CommentPanel} with a rounded border and lines under the text.
 	 * <p>
-	 * Unlike {@link ru.yanes.Panels.CommentTextArea}, the lines are drawn up to the bottom of the area.
+	 * Unlike {@link ru.yanes.panels.CommentTextArea}, the lines are drawn up to the bottom of the area.
 	 * Input is limited by {@link TextLimitDocumentFilter}.
 	 */
 	class CommentTextArea extends JTextArea {

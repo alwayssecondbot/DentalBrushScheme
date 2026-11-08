@@ -5,9 +5,9 @@ import java.awt.*;
 import javax.swing.*;
 
 import ru.yanes.state.BrushSelection;
-import ru.yanes.Panels.BrushPanel;
-import ru.yanes.Panels.DentalPanel;
-import ru.yanes.Panels.ToolPanel;
+import ru.yanes.panels.BrushPanel;
+import ru.yanes.panels.DentalPanel;
+import ru.yanes.panels.ToolPanel;
 import ru.yanes.models.Mouth;
 
 import org.slf4j.Logger;
