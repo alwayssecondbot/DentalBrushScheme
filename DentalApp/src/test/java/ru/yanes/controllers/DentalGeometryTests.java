@@ -3,12 +3,17 @@ package ru.yanes.controllers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import ru.yanes.models.Brush;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static ru.yanes.config.DentalGeometryConstants.*;
 
 /**
@@ -25,6 +30,11 @@ import static ru.yanes.config.DentalGeometryConstants.*;
  * accidental changes of the hit-testing logic, but do not prove that the formulas themselves are correct.
  */
 class DentalGeometryTests {
+
+	/** Large enough panel so that brush swatches (BRUSH_DIAMETER = 70) don't overlap: */
+	/** spacing = height / (brushCount + 1) = 800 / 8 = 100. */
+	private static final int WIDTH = 400;
+	private static final int HEIGHT = 800;
 
 	/** X-coordinate of the jaw arc center used in all tests. */
 	private static final int CENTER_X = 0;
@@ -170,7 +180,7 @@ class DentalGeometryTests {
 		@DisplayName("Clicking the outer zone of the first upper space returns SpaceHit(0, isInner=false)")
 		void hitsOuterZoneOfFirstUpperSpace() {
 			int[] p = outerSpacePixel(true, 0);
-			assertEquals(Optional.of(new DentalGeometry.SpaceHit(0, false)),
+			assertEquals(Optional.of(new SpaceHit(0, false)),
 					DentalGeometry.checkSpaceClick(p[0], p[1], CENTER_X, CENTER_Y, true));
 		}
 
@@ -178,7 +188,7 @@ class DentalGeometryTests {
 		@DisplayName("Clicking the inner zone of the first upper space returns SpaceHit(0, isInner=true)")
 		void hitsInnerZoneOfFirstUpperSpace() {
 			int[] p = innerSpacePixel(true, 0);
-			assertEquals(Optional.of(new DentalGeometry.SpaceHit(0, true)),
+			assertEquals(Optional.of(new SpaceHit(0, true)),
 					DentalGeometry.checkSpaceClick(p[0], p[1], CENTER_X, CENTER_Y, true));
 		}
 
@@ -186,7 +196,7 @@ class DentalGeometryTests {
 		@DisplayName("Last upper space (index 14) resolves to position 14")
 		void lastUpperSpaceResolvesCorrectly() {
 			int[] p = outerSpacePixel(true, 14);
-			assertEquals(Optional.of(new DentalGeometry.SpaceHit(14, false)),
+			assertEquals(Optional.of(new SpaceHit(14, false)),
 					DentalGeometry.checkSpaceClick(p[0], p[1], CENTER_X, CENTER_Y, true));
 		}
 
@@ -196,9 +206,9 @@ class DentalGeometryTests {
 			int[] first = outerSpacePixel(false, 0);
 			int[] last = outerSpacePixel(false, 14);
 
-			assertEquals(Optional.of(new DentalGeometry.SpaceHit(15, false)),
+			assertEquals(Optional.of(new SpaceHit(15, false)),
 					DentalGeometry.checkSpaceClick(first[0], first[1], CENTER_X, CENTER_Y, false));
-			assertEquals(Optional.of(new DentalGeometry.SpaceHit(29, false)),
+			assertEquals(Optional.of(new SpaceHit(29, false)),
 					DentalGeometry.checkSpaceClick(last[0], last[1], CENTER_X, CENTER_Y, false));
 		}
 
@@ -206,7 +216,7 @@ class DentalGeometryTests {
 		@DisplayName("A click exactly SPACE_RADIUS away from the outer zone still counts as a hit")
 		void boundaryDistanceIsAHit() {
 			int[] p = outerSpacePixel(true, 5);
-			assertEquals(Optional.of(new DentalGeometry.SpaceHit(5, false)),
+			assertEquals(Optional.of(new SpaceHit(5, false)),
 					DentalGeometry.checkSpaceClick(p[0] + SPACE_RADIUS, p[1], CENTER_X, CENTER_Y, true));
 		}
 
@@ -222,10 +232,10 @@ class DentalGeometryTests {
 		@DisplayName("Outer zone is checked before inner: a click near the outer zone is never reported as inner")
 		void outerZoneTakesPriority() {
 			int[] p = outerSpacePixel(true, 3);
-			Optional<DentalGeometry.SpaceHit> hit =
+			Optional<SpaceHit> hit =
 					DentalGeometry.checkSpaceClick(p[0], p[1], CENTER_X, CENTER_Y, true);
 			assertTrue(hit.isPresent());
-			assertEquals(false, hit.get().isInner());
+			assertFalse(hit.get().isInner());
 		}
 
 		@Test
@@ -246,48 +256,40 @@ class DentalGeometryTests {
 	@DisplayName("checkBrushClick()")
 	class CheckBrushClick {
 
-		// Large enough panel so that brush swatches (BRUSH_DIAMETER = 70) don't overlap:
-		// spacing = height / (brushCount + 1) = 800 / 8 = 100.
-		private static final int WIDTH = 400;
-		private static final int HEIGHT = 800;
-		private static final int CENTER = WIDTH / 2;
-
-		private int brushPosition(int oneBasedIndex) {
-			int brushCount = Brush.values().length;
-			return HEIGHT / (brushCount + 1) * oneBasedIndex;
-		}
-
 		@Test
 		@DisplayName("Clicking the exact center of the first brush swatch returns that brush")
 		void hitsFirstBrush() {
-			int y = brushPosition(1);
-			assertEquals(Optional.of(Brush.values()[0]),
-					DentalGeometry.checkBrushClick(CENTER, y, WIDTH, HEIGHT));
+			Brush brush = Brush.values()[0];
+			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush);
+			assertEquals(Optional.of(brush),
+					DentalGeometry.checkBrushClick(brushCenter.x(), brushCenter.y(), WIDTH, HEIGHT));
 		}
 
 		@Test
 		@DisplayName("Clicking the exact center of the last brush swatch returns that brush")
 		void hitsLastBrush() {
 			int brushCount = Brush.values().length;
-			int y = brushPosition(brushCount);
-			assertEquals(Optional.of(Brush.values()[brushCount - 1]),
-					DentalGeometry.checkBrushClick(CENTER, y, WIDTH, HEIGHT));
+			Brush brush = Brush.values()[brushCount - 1];
+			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush);
+			assertEquals(Optional.of(brush),
+					DentalGeometry.checkBrushClick(brushCenter.x(), brushCenter.y(), WIDTH, HEIGHT));
 		}
 
 		@Test
 		@DisplayName("A click exactly BRUSH_DIAMETER/2 away from a swatch center still counts as a hit")
 		void boundaryDistanceIsAHit() {
-			int y = brushPosition(3);
-			assertEquals(Optional.of(Brush.values()[2]),
-					DentalGeometry.checkBrushClick(CENTER + BRUSH_DIAMETER / 2, y, WIDTH, HEIGHT));
+			Brush brush = Brush.L;
+			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush);
+			assertEquals(Optional.of(brush),
+					DentalGeometry.checkBrushClick(brushCenter.x(), brushCenter.y() + BRUSH_DIAMETER / 2, WIDTH, HEIGHT));
 		}
 
 		@Test
 		@DisplayName("A click just past BRUSH_DIAMETER/2 is a miss")
 		void justPastBoundaryIsAMiss() {
-			int y = brushPosition(3);
+			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, Brush.L);
 			assertEquals(Optional.empty(),
-					DentalGeometry.checkBrushClick(CENTER + BRUSH_DIAMETER / 2 + 1, y, WIDTH, HEIGHT));
+					DentalGeometry.checkBrushClick(brushCenter.x(), brushCenter.y() + BRUSH_DIAMETER / 2 + 1, WIDTH, HEIGHT));
 		}
 
 		@Test
@@ -295,6 +297,81 @@ class DentalGeometryTests {
 		void farClickIsAMiss() {
 			assertEquals(Optional.empty(),
 					DentalGeometry.checkBrushClick(100_000, 100_000, WIDTH, HEIGHT));
+		}
+	}
+
+	@Nested
+	@DisplayName("getBrushCircleCenter()")
+	class GetBrushCircleCenter {
+
+		@Test
+		@DisplayName("Anchor points of first and last circles")
+		void firstAndLastCircles() {
+			BrushCenter firstCircleExpected = new BrushCenter(200, 100);
+			BrushCenter firstCircleActual = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, Brush.values()[0]);
+
+			Brush lastBrush = Brush.values()[Brush.values().length - 1];
+			BrushCenter lastCircleExpected = new BrushCenter(200, 700);
+			BrushCenter lastCircleActual = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, lastBrush);
+
+			assertAll(
+					() -> assertEquals(firstCircleExpected, firstCircleActual),
+					() -> assertEquals(lastCircleExpected, lastCircleActual)
+			);
+		}
+
+		@ParameterizedTest(name = "Brush {0} circle has the same x as other")
+		@EnumSource(Brush.class)
+		void eachCircleHasTheSameX(Brush brush) {
+			assertEquals(WIDTH / 2, DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush).x());
+		}
+
+		@Test
+		@DisplayName("Y scale with bigger brush")
+		void yScaleWithBrush() {
+			List<Integer> list = Arrays.stream(Brush.values()).map(brush -> DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush).y())
+					.toList();
+
+			assertThat(list).isSorted().doesNotHaveDuplicates();
+
+		}
+
+		@Test
+		@DisplayName("Distance between brushes is equal 100")
+		void distanceBetweenBrushes() {
+			List<Integer> list = Arrays.stream(Brush.values()).map(brush -> DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush).y())
+					.toList();
+			List<Integer> gaps = IntStream.range(0, list.size() - 1).map(i -> list.get(i + 1) - list.get(i)).boxed().toList();
+
+			assertThat(gaps).hasSize(list.size() - 1).allSatisfy(gap -> assertThat(gap).isEqualTo(100));
+		}
+
+		@ParameterizedTest(name = "Brush {0} circle inside panel")
+		@EnumSource(Brush.class)
+		void brushInsidePanel(Brush brush) {
+			int y = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush).y();
+			assertAll(
+					() -> assertTrue(() -> y - BRUSH_DIAMETER / 2 >= 0),
+					() -> assertTrue(() -> y + BRUSH_DIAMETER / 2 <= HEIGHT)
+			);
+		}
+
+		@Test
+		@DisplayName("Brush circles don't cover each other")
+		void brushCirclesDontCoverEachOther() {
+			List<Integer> list = Arrays.stream(Brush.values()).map(brush -> DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush).y())
+					.toList();
+
+			List<Integer> gaps = IntStream.range(0, list.size() - 1).map(i -> list.get(i + 1) - list.get(i)).boxed().toList();
+
+			assertThat(gaps).hasSize(list.size() - 1).allSatisfy(gap -> assertThat(gap).isGreaterThanOrEqualTo(BRUSH_DIAMETER));
+		}
+
+		@ParameterizedTest(name = "Brush {0} returns when it's clicked")
+		@EnumSource(Brush.class)
+		void brushReturnsWhenItIsClicked(Brush brush) {
+			BrushCenter brushExpected = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush);
+			assertEquals(Optional.of(brush), DentalGeometry.checkBrushClick(brushExpected.x(), brushExpected.y(), WIDTH, HEIGHT));
 		}
 	}
 }

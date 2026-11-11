@@ -87,4 +87,12 @@ public final class DentalGeometryConstants {
 	 * The diameter of the circle representing the brush, in pixels.
 	 */
 	public static final int BRUSH_DIAMETER = 70;
+
+	public static final float SELECTED_BRUSH_STROKE_THICKNESS = 10F;
+
+	public static final int SELECTED_BRUSH_STROKE_OFFSET = 5;
+
+	public static final float BRUSH_STROKE_THICKNESS = 2.5F;
+
+
 }

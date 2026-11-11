@@ -2,8 +2,9 @@ package ru.yanes.panels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.yanes.controllers.BrushCenter;
 import ru.yanes.controllers.DentalGeometry;
-import static ru.yanes.config.DentalGeometryConstants.BRUSH_DIAMETER;
+
 import ru.yanes.models.Brush;
 import ru.yanes.state.BrushSelection;
 
@@ -14,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.Objects;
 
+import static ru.yanes.config.DentalGeometryConstants.*;
 
 
 /**
@@ -106,23 +108,20 @@ public class BrushPanel extends JPanel {
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		int brushCount = Brush.values().length;
-		int centerX = this.getWidth() / 2;
-
-		for (int i = 1; i <= brushCount; i++) {
-			Brush brush = Brush.values()[i - 1];
-			int brushPos = this.getHeight() / (brushCount + 1) * i;
+		for (Brush brush : Brush.values()) {
+			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(this.getWidth(), this.getHeight(), brush);
 
 			// Save the original transform state
 			AffineTransform originalTransform = g2d.getTransform();
 
 			// Translate the origin to our calculated x, y coordinates
-			g2d.translate(centerX, brushPos);
+			g2d.translate(brushCenter.x(), brushCenter.y());
 
 			if (Objects.equals(brush, brushSelection.getSelectedBrush())) {
 				g2d.setColor(Color.LIGHT_GRAY);
-				g2d.setStroke(new BasicStroke(10F));
-				g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER + 5, BRUSH_DIAMETER + 5);
+				g2d.setStroke(new BasicStroke(SELECTED_BRUSH_STROKE_THICKNESS));
+				g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER + SELECTED_BRUSH_STROKE_OFFSET,
+						BRUSH_DIAMETER + SELECTED_BRUSH_STROKE_OFFSET);
 			}
 
 			// Draw the brush shape (centered on 0,0 since we translated)
@@ -132,7 +131,7 @@ public class BrushPanel extends JPanel {
 
 			// Draw the outline
 			g2d.setColor(Color.BLACK);
-			g2d.setStroke(new BasicStroke(2.5F));
+			g2d.setStroke(new BasicStroke(BRUSH_STROKE_THICKNESS));
 			g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER, BRUSH_DIAMETER);
 
 			// Draw brush diameter

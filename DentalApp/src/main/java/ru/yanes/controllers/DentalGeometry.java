@@ -20,14 +20,6 @@ import java.util.Optional;
 public class DentalGeometry {
 
 	/**
-	 * A result of clicking on a tooth space.
-	 *
-	 * @param position index of the space in the {@link ru.yanes.models.Mouth} spaces array (from 0 to 29);
-	 * @param isInner {@code true} if the inner part of the space was clicked, {@code false} if the outer part was clicked.
-	 */
-	public record SpaceHit(int position, boolean isInner) {}
-
-	/**
 	 * Checks whether the click hits one of the teeth on the specified jaw.
 	 * <p>
 	 * Teeth are placed on an elliptical arc around the given center, 16 teeth per jaw.
@@ -126,21 +118,44 @@ public class DentalGeometry {
 	 */
 	public static Optional<Brush> checkBrushClick(int mouseX, int mouseY, int width, int height) {
 
-		int brushCount = Brush.values().length;
-		int centerX = width / 2;
+		for (Brush brush : Brush.values()) {
 
-		for (int i = 1; i <= brushCount; i++) {
-
-			int brushPos = height / (brushCount + 1) * i;
+			BrushCenter brushCenter = getBrushCircleCenter(width, height, brush);
 
 			//If x,y of mouse in brush
-			if (getDistance(centerX, brushPos, mouseX, mouseY) <= (double) BRUSH_DIAMETER / 2) {
-				return Optional.of(Brush.values()[i - 1]);
+			if (getDistance(brushCenter.x(), brushCenter.y(), mouseX, mouseY) <= (double) BRUSH_DIAMETER / 2) {
+				return Optional.of(brush);
 			}
 
 		}
 
 		return Optional.empty();
+	}
+
+	/**
+	 * Calculates the center of the circle (swatch) of the given brush on the brush panel.
+	 * <p>
+	 * The circles are arranged in one column along the horizontal center of the panel
+	 * ({@code x = width / 2}) at equal vertical intervals of {@code height / (brushCount + 1)},
+	 * in the order of the {@link Brush} constants: the first brush is at the top, the last one is at the bottom.
+	 * <p>
+	 * This is the single source of the swatch positions: it is used both for drawing the brushes
+	 * and for hit-testing in {@link #checkBrushClick(int, int, int, int)}, so a click is always
+	 * checked against the same position where the circle is drawn.
+	 * <p>
+	 * The interval is calculated with integer division, so for a panel lower than
+	 * {@code brushCount + 1} pixels all the centers have {@code y = 0}.
+	 *
+	 * @param width width of the brush panel;
+	 * @param height height of the brush panel;
+	 * @param brush the brush whose circle center is calculated; must not be {@code null}.
+	 * @return the {@link BrushCenter} with the coordinates of the circle center inside the panel.
+	 * @throws NullPointerException if {@code brush} is {@code null}.
+	 */
+	public static BrushCenter getBrushCircleCenter(int width, int height, Brush brush) {
+		int x = width / 2;
+		int y = height / (Brush.values().length + 1) * (brush.ordinal() + 1);
+		return new BrushCenter(x, y);
 	}
 
 	/**
