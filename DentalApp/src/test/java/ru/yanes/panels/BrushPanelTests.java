@@ -75,10 +75,10 @@ class BrushPanelTests {
 		));
 	}
 
-	private BufferedImage getRender(BrushPanel brushPanel) {
+	private BufferedImage getRender(BrushPanel panel) {
 		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = image.createGraphics();
-		brushPanel.paint(g);
+		panel.paint(g);
 
 		g.dispose();
 		return image;
@@ -210,17 +210,6 @@ class BrushPanelTests {
 		@ParameterizedTest(name = "Brush {0} has outline stroke because nearest color LIGHT_GRAY")
 		@EnumSource(Brush.class)
 		void brushHasOutline(Brush brush) {
-			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush);
-			brushSelection.toggleSelection(brush);
-
-			BufferedImage image = getRender(brushPanel);
-			assertEquals(Color.LIGHT_GRAY, getColorInPoint(brushCenter.x(), getSelectedOutlineStrokeY(brushCenter.y()), image));
-		}
-
-		@Test
-		@DisplayName("Panel shows brush selection even if brush has been selected not by click")
-		void brushHasBeenSelectedNotByClick() {
-			Brush brush = Brush.values()[0];
 			BrushCenter brushCenter = DentalGeometry.getBrushCircleCenter(WIDTH, HEIGHT, brush);
 			brushSelection.toggleSelection(brush);
 
