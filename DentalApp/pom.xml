@@ -189,7 +189,6 @@
 
                 <configuration>
                     <excludes>
-                        <exclude>**/Panels/**/*.class</exclude>
                         <exclude>**/config/DentalGeometryConstants.class</exclude>
                         <exclude>**/DentalScheme.class</exclude>
                     </excludes>
