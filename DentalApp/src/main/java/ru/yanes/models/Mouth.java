@@ -41,7 +41,6 @@ public class Mouth {
 
 		for(int i = 0; i < teethNumber; ++i) {
 			this.teeth[i] = new Tooth(TEETH_POSITION[i]);
-//			System.out.println("Tooth - " + i + ", with position - " + TEETH[i].getPosition() + ";");
 		}
 
 		// Number of spaces for each jaw lesser by 1 (for 2 jaws by 2)
@@ -56,7 +55,6 @@ public class Mouth {
 			} else {
 				this.spaces[i] = new Space(this.teeth[i], this.teeth[i + 1], i);
 			}
-//			System.out.println("Space - " + i + ", with left tooth - " + this.SPACES[i].getLeftTooth().getPosition() + ", and right tooth - " + this.SPACES[i].getRightTooth().getPosition() + ";");
 		}
 	}
 

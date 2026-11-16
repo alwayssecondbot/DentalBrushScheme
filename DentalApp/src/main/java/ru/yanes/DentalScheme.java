@@ -4,6 +4,7 @@ import java.awt.*;
 
 import javax.swing.*;
 
+import ru.yanes.config.UITheme;
 import ru.yanes.state.BrushSelection;
 import ru.yanes.panels.BrushPanel;
 import ru.yanes.panels.DentalPanel;
@@ -12,6 +13,9 @@ import ru.yanes.models.Mouth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static ru.yanes.config.UIConstants.WINDOW_MIN_HEIGHT;
+import static ru.yanes.config.UIConstants.WINDOW_MIN_WIDTH;
 
 
 /**
@@ -40,40 +44,9 @@ public class DentalScheme extends JFrame {
 	 */
 	private static final Logger log = LoggerFactory.getLogger(DentalScheme.class);
 	/**
-	 * Minimal width and height of app window ({@code windowMinSize[0]} — width, {@code windowMinSize[1]} — height).
-	 */
-	private final int[] windowMinSize = new int[]{1600, 1300};
-	/**
-	 * Preferred width and height of {@code CommentPanel} ({@code commentPanelPreferSize[0]} — width, {@code commentPanelPreferSize[1]} — height).
-	 *
-	 * @deprecated The {@code CommentPanel} is disabled, instead the comment is embedded in the {@link DentalPanel}.
-	 */
-	@Deprecated
-	private final int[] commentPanelPreferSize = new int[]{400, 0};
-	/**
-	 * Font family name which is used by default in app.
-	 */
-	private String basicFont;
-	/**
-	 * Temporary field with the index of the font family in {@link #fonts} which is used as {@link #basicFont}.
-	 */
-	private int count = 0;
-	/**
-	 * Temporary field with the list of font family names available in the system.
-	 */
-	private final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-	/**
-	 * Default background color for app. Currently - light green.
-	 */
-	private final Color defaultBackground = new Color(230, 240, 230);
-	/**
 	 * Panel which displays the available brush types and allows you to select one of them.
 	 */
 	private final BrushPanel brushPanel;
-	/**
-	 * Preferred width and height of {@link BrushPanel} ({@code brushPanelPreferSize[0]} — width, {@code brushPanelPreferSize[1]} — height).
-	 */
-	private final int[] brushPanelPreferSize = new int[]{400, 0};
 	/**
 	 * Shared state of the currently selected brush. It is changed by the {@link BrushPanel}
 	 * and read by the {@link DentalPanel}; both panels repaint themselves on every change.
@@ -91,10 +64,6 @@ public class DentalScheme extends JFrame {
 	 * Panel with tool buttons.
 	 */
 	private final ToolPanel toolPanel;
-	/**
-	 * Preferred width and height of {@link ToolPanel} ({@code toolPanelPreferSize[0]} — width, {@code toolPanelPreferSize[1]} — height).
-	 */
-	private final int[] toolPanelPreferSize = new int[]{0, 30};
 
 
 	/**
@@ -103,28 +72,21 @@ public class DentalScheme extends JFrame {
 	 */
 	public DentalScheme() {
 
-		basicFont = fonts[count];
-		System.out.println("Font Name: " + basicFont);
-
 		this.setTitle("\ud83e\uddb7 Дентальная схема");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setMinimumSize(new Dimension(windowMinSize[0], windowMinSize[1]));
+		this.setMinimumSize(new Dimension(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT));
 
 		this.brushSelection = new BrushSelection();
 		this.mouth = new Mouth();
-		dentalPanel = new DentalPanel(brushSelection, mouth, defaultBackground, basicFont);
+		dentalPanel = new DentalPanel(brushSelection, mouth, UITheme.DEFAULT);
 		dentalPanel.setName("dentalPanel");
 
-		brushPanel = new BrushPanel(brushSelection, defaultBackground, brushPanelPreferSize, basicFont);
+		brushPanel = new BrushPanel(brushSelection, UITheme.DEFAULT);
 		brushPanel.setName("brushPanel");
 
 		this.add(brushPanel, BorderLayout.EAST);
 
-//		CommentPanel commentPanel = new CommentPanel();
-//		commentPanel.setName("commentPanel");
-//		this.add(commentPanel, BorderLayout.WEST);
-
-		toolPanel = new ToolPanel(dentalPanel, defaultBackground, toolPanelPreferSize, basicFont);
+		toolPanel = new ToolPanel(dentalPanel, UITheme.DEFAULT);
 		toolPanel.setName("toolPanel");
 
 		this.add(toolPanel, BorderLayout.NORTH);
@@ -143,17 +105,9 @@ public class DentalScheme extends JFrame {
 						];
 						Class fields: [
 							dentalPanel: '{}',
-							logger: '{}',
-							windowMinSize: '{}',
-							brushPanelPreferSize: '{}',
-							commentPanelPreferSize: '{}',
-							toolPanelPreferSize: '{}',
-							basicFont: '{}',
-							defaultBackground: '{}'
+							logger: '{}'
 						].""",
-				this.getTitle(), this.getDefaultCloseOperation(), this.getMinimumSize(), this.isVisible(), dentalPanel, log,
-				this.windowMinSize, this.brushPanelPreferSize, this.commentPanelPreferSize, this.toolPanelPreferSize,
-				this.basicFont, this.defaultBackground);
+				this.getTitle(), this.getDefaultCloseOperation(), this.getMinimumSize(), this.isVisible(), dentalPanel, log);
 	}
 
 	/**

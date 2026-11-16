@@ -2,12 +2,16 @@ package ru.yanes.panels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.yanes.config.UITheme;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+
+import static ru.yanes.config.UIConstants.TOOL_PANEL_PREFERRED_HEIGHT;
+import static ru.yanes.config.UIConstants.TOOL_PANEL_PREFERRED_WIDTH;
 
 /**
  * A toolbar containing action buttons (for example, printing a diagram).
@@ -23,22 +27,23 @@ public class ToolPanel extends JPanel {
 	 */
 	private final Logger log = LoggerFactory.getLogger(ToolPanel.class);
 	/** Font which is used for the tool buttons. */
-	private final Font font;
+	private final UITheme theme;
 
 	/**
 	 * Creates a toolbar and adds a print button to it.
+	 * The preferred size is taken from {@link ru.yanes.config.UIConstants#TOOL_PANEL_PREFERRED_WIDTH}
+	 * and {@link ru.yanes.config.UIConstants#TOOL_PANEL_PREFERRED_HEIGHT}.
 	 *
 	 * @param dentalPanel the {@link DentalPanel} panel to print;
 	 * @param background background color of the panel;
-	 * @param preferredSize preferred size of the panel: [0] - width, [1] - height;
 	 * @param font font family name of the panel.
 	 */
-	public ToolPanel(DentalPanel dentalPanel, Color background, int[] preferredSize, String font) {
+	public ToolPanel(DentalPanel dentalPanel, UITheme theme) {
 		this.frameToPrint = dentalPanel;
-		this.font = new Font(font, Font.PLAIN, 18);
+		this.theme = theme;
 
-		this.setPreferredSize(new Dimension(preferredSize[0], preferredSize[1]));
-		this.setBackground(background);
+		this.setPreferredSize(new Dimension(TOOL_PANEL_PREFERRED_WIDTH, TOOL_PANEL_PREFERRED_HEIGHT));
+		this.setBackground(theme.backgroundColor());
 		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		this.setAlignmentY(TOP_ALIGNMENT);
 
@@ -57,9 +62,9 @@ public class ToolPanel extends JPanel {
 						Class fields: [
 							log: '{}',
 							frameToPrint: '{}'
-							font: '{}'
+							theme: '{}'
 						].""",
-				this.getPreferredSize(), this.getBackground(), this.getLayout(), this.getAlignmentY(), this.log, this.frameToPrint, this.font);
+				this.getPreferredSize(), this.getBackground(), this.getLayout(), this.getAlignmentY(), this.log, this.frameToPrint, this.theme);
 	}
 
 	/**
@@ -102,7 +107,7 @@ public class ToolPanel extends JPanel {
 	private JButton getToolButton(String text, ActionListener actionListener) {
 		log.debug("Creating tool button with label: '{}'", text);
 		JButton button = new JButton(text);
-		button.setFont(font);
+		button.setFont(new Font(theme.panelMainFontFamily(), Font.PLAIN, 18));
 		button.setPreferredSize(new Dimension(100, 30));
 		button.setFocusPainted(false);
 		button.setOpaque(true);

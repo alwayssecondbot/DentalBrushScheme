@@ -2,6 +2,7 @@ package ru.yanes.panels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.yanes.config.UITheme;
 import ru.yanes.controllers.BrushCenter;
 import ru.yanes.controllers.DentalGeometry;
 
@@ -15,6 +16,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.Objects;
 
+import static ru.yanes.config.UIConstants.BRUSH_PANEL_PREFERRED_HEIGHT;
+import static ru.yanes.config.UIConstants.BRUSH_PANEL_PREFERRED_WIDTH;
 import static ru.yanes.config.DentalGeometryConstants.*;
 
 
@@ -33,25 +36,24 @@ public class BrushPanel extends JPanel {
 	private final Logger log = LoggerFactory.getLogger(BrushPanel.class);
 	/** Shared state of the selected brush: toggled on click and read when the panel is painted. */
 	private final BrushSelection brushSelection;
-	/** Font which is used for the brush diameter labels. */
-	private final Font font;
+
+	private final UITheme theme;
 
 	/**
 	 * Creates a brush selection panel, configures the background, dimensions, and click handler,
 	 * and subscribes the panel to repaint on every change of {@code brushSelection}.
+	 * The preferred size is taken from {@link ru.yanes.config.UIConstants#BRUSH_PANEL_PREFERRED_WIDTH}
+	 * and {@link ru.yanes.config.UIConstants#BRUSH_PANEL_PREFERRED_HEIGHT}.
 	 *
 	 * @param brushSelection shared state of the selected brush;
-	 * @param background background color of the panel;
-	 * @param preferredSize preferred size of the panel: [0] - width, [1] - height;
-	 * @param font font family name of the panel.
 	 */
-	public BrushPanel(BrushSelection brushSelection, Color background, int[] preferredSize, String font) {
+	public BrushPanel(BrushSelection brushSelection, UITheme theme) {
 		this.brushSelection = brushSelection;
 		this.brushSelection.addListener(ignored -> repaint());
-		this.font = new Font(font, Font.BOLD, 14);
+		this.theme = theme;
 
-		this.setBackground(background);
-		this.setPreferredSize(new Dimension(preferredSize[0], preferredSize[1]));
+		this.setBackground(this.theme.backgroundColor());
+		this.setPreferredSize(new Dimension(BRUSH_PANEL_PREFERRED_WIDTH, BRUSH_PANEL_PREFERRED_HEIGHT));
 
 		log.info("Adding mouse listener brush panel...");
 		this.addMouseListener(new MouseAdapter() {
@@ -70,9 +72,9 @@ public class BrushPanel extends JPanel {
 						Class fields: [
 							log: '{}',
 							brushSelection: '{}',
-							font: '{}'
+							theme: '{}'
 						].""",
-				this.getPreferredSize(), this.getBackground(), this.log, this.brushSelection, this.font);
+				this.getPreferredSize(), this.getBackground(), this.log, this.brushSelection, this.theme);
 	}
 
 	/**
@@ -118,10 +120,10 @@ public class BrushPanel extends JPanel {
 			g2d.translate(brushCenter.x(), brushCenter.y());
 
 			if (Objects.equals(brush, brushSelection.getSelectedBrush())) {
-				g2d.setColor(Color.LIGHT_GRAY);
-				g2d.setStroke(new BasicStroke(SELECTED_BRUSH_STROKE_THICKNESS));
-				g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER + SELECTED_BRUSH_STROKE_OFFSET,
-						BRUSH_DIAMETER + SELECTED_BRUSH_STROKE_OFFSET);
+				g2d.setColor(theme.selectionShadowColor());
+				g2d.setStroke(new BasicStroke(SELECTION_SHADOW_THICKNESS));
+				g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER + SELECTION_SHADOW_OFFSET,
+						BRUSH_DIAMETER + SELECTION_SHADOW_OFFSET);
 			}
 
 			// Draw the brush shape (centered on 0,0 since we translated)
@@ -130,13 +132,13 @@ public class BrushPanel extends JPanel {
 
 
 			// Draw the outline
-			g2d.setColor(Color.BLACK);
-			g2d.setStroke(new BasicStroke(BRUSH_STROKE_THICKNESS));
+			g2d.setColor(theme.brushOutlineColor());
+			g2d.setStroke(new BasicStroke(BRUSH_OUTLINE_THICKNESS));
 			g2d.drawOval(-BRUSH_DIAMETER / 2, -BRUSH_DIAMETER / 2, BRUSH_DIAMETER, BRUSH_DIAMETER);
 
 			// Draw brush diameter
 			String posText = String.valueOf(brush.getDiameter());
-			g2d.setFont(font);
+			g2d.setFont(new Font(theme.panelMainFontFamily(), Font.BOLD, 14));
 			FontMetrics fontMetrics = g2d.getFontMetrics();
 			int textX = -fontMetrics.stringWidth(posText) / 2;
 			int textY = fontMetrics.getHeight() / 2 - 2;

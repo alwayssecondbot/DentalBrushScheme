@@ -3,6 +3,7 @@ package ru.yanes.panels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.yanes.config.UITheme;
 import ru.yanes.controllers.DentalGeometry;
 import ru.yanes.models.Brush;
 import ru.yanes.models.Mouth;
@@ -10,6 +11,7 @@ import ru.yanes.models.Space;
 import ru.yanes.models.Tooth;
 import ru.yanes.state.BrushSelection;
 
+import static ru.yanes.config.UIConstants.*;
 import static ru.yanes.config.DentalGeometryConstants.*;
 
 import javax.swing.*;
@@ -42,17 +44,9 @@ public class DentalPanel extends JPanel implements Printable {
 	 */
 	private final Logger log = LoggerFactory.getLogger(DentalPanel.class);
 	/**
-	 * Basic tooth color (white).
-	 */
-	private final Color basicToothColor = Color.WHITE;
-	/**
 	 * Mouth model containing teeth and spaces. It is passed from outside and changed on clicks.
 	 */
 	private final Mouth mouth;
-	/**
-	 * The color of panel background and empty spaces.
-	 */
-	private final Color background;
 	/**
 	 * Shared state of the selected brush: read on clicks and when the spaces are painted.
 	 */
@@ -61,34 +55,25 @@ public class DentalPanel extends JPanel implements Printable {
 	 * Comment title text.
 	 */
 	private final String comment = "Поле для комментария";
-	/**
-	 * Maximum number of rows in the comment text area.
-	 */
-	private final int commentAreaRowLimit = 20;
-	/**
-	 * Maximum number of columns in the comment text area.
-	 */
-	private final int commentAreaColumnLimit = 25;
+	private final UITheme theme;
 
 
 	/**
 	 * Creates the main panel, saves the mouth model, adds a comment text area
 	 * and a click handler for teeth and spaces, and subscribes the panel to repaint
-	 * on every change of {@code brushSelection}.
+	 * on every change of {@code brushSelection}. The size limits of the comment text area are taken from
+	 * {@link ru.yanes.config.UIConstants#COMMENT_AREA_ROW_LIMIT} and {@link ru.yanes.config.UIConstants#COMMENT_AREA_COLUMN_LIMIT}.
 	 *
 	 * @param brushSelection shared state of the selected brush;
 	 * @param mouth mouth model with teeth and spaces to display and change;
-	 * @param background background color of the panel;
-	 * @param font font family name of the panel.
 	 */
-	public DentalPanel(BrushSelection brushSelection, Mouth mouth, Color background, String font) {
+	public DentalPanel(BrushSelection brushSelection, Mouth mouth, UITheme theme) {
 		this.mouth = mouth;
-
-		this.background = background;
+		this.theme = theme;
 		this.brushSelection = brushSelection;
 		this.brushSelection.addListener(ignored -> repaint());
 
-		this.setBackground(this.background);
+		this.setBackground(theme.backgroundColor());
 		this.setLayout(new GridBagLayout());
 
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -97,7 +82,8 @@ public class DentalPanel extends JPanel implements Printable {
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.CENTER;
 
-		CommentTextArea commentTextArea = new CommentTextArea(commentAreaRowLimit, commentAreaColumnLimit, new Font(font, Font.PLAIN, 18), this.background);
+		CommentTextArea commentTextArea = new CommentTextArea(COMMENT_AREA_ROW_LIMIT, COMMENT_AREA_COLUMN_LIMIT,
+				new Font(theme.panelSubFontFamily(), Font.PLAIN, 18), theme.backgroundColor());
 		commentTextArea.setName("commentTextArea");
 		this.add(commentTextArea, gbc);
 
@@ -116,15 +102,12 @@ public class DentalPanel extends JPanel implements Printable {
                         Class fields: [
                         	log: '{}',
                         	mouth: '{}',
-                        	basicToothColor: '{}',
-                        	background: '{}',
+                        	theme: '{}',
                         	brushSelection: '{}',
-                        	comment: '{}',
-                        	commentAreaRowLimit: '{}',
-                        	commentAreaColumnLimit: '{}'
+                        	comment: '{}'
                         ].""",
-				this.getBackground(), this.getLayout(), this.log, this.mouth, this.basicToothColor, this.background, this.brushSelection,
-				this.comment, this.commentAreaRowLimit, this.commentAreaColumnLimit);
+				this.getBackground(), this.getLayout(), this.log, this.mouth, this.theme,
+				this.brushSelection, this.comment);
 	}
 
 	/**
@@ -151,7 +134,7 @@ public class DentalPanel extends JPanel implements Printable {
                 ].""", mouseX, mouseY, selectedBrush);
 
 		// Check Upper Jaw click targets
-		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY - 40, true)
+		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY - JAW_VERTICAL_OFFSET, true)
 				.ifPresentOrElse(pos -> {
 					Tooth clickedTooth = mouth.getTooth(pos);
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
@@ -165,7 +148,7 @@ public class DentalPanel extends JPanel implements Printable {
 
 		if (Objects.nonNull(selectedBrush)) {
 			// Check Upper Jaw click targets
-			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - 40, true)
+			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY - JAW_VERTICAL_OFFSET, true)
 					.ifPresentOrElse(hit -> {
 						Space space = mouth.getSpace(hit.position());
 						if (space.isAvailable()) {
@@ -188,7 +171,7 @@ public class DentalPanel extends JPanel implements Printable {
 
 
 		// Check Lower Jaw click targets
-		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY + 40, false)
+		DentalGeometry.checkToothClick(mouseX, mouseY, centerX, centerY + JAW_VERTICAL_OFFSET, false)
 				.ifPresentOrElse(pos -> {
 					Tooth clickedTooth = mouth.getTooth(pos);
 					clickedTooth.setAvailable(!clickedTooth.isAvailable());
@@ -203,7 +186,7 @@ public class DentalPanel extends JPanel implements Printable {
 
 		if (Objects.nonNull(selectedBrush)) {
 			// Check Lower Jaw click targets
-			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY + 40, false)
+			DentalGeometry.checkSpaceClick(mouseX, mouseY, centerX, centerY + JAW_VERTICAL_OFFSET, false)
 					.ifPresentOrElse(hit -> {
 						Space space = mouth.getSpace(hit.position());
 						if (space.isAvailable()) {
@@ -243,43 +226,42 @@ public class DentalPanel extends JPanel implements Printable {
 		int centerY = this.getHeight() / 2;
 
 		// Draw Upper Jaw (Angles from roughly 170 degrees to 10 degrees) and it is wider than lower jaw (radius X and Y smaller)
-		this.drawJaw(g2d, true, centerX, centerY - 40, START_ANGLE_UPPER, END_ANGLE_UPPER);
+		this.drawJaw(g2d, true, centerX, centerY - JAW_VERTICAL_OFFSET, UPPER_JAW_START_ANGLE, UPPER_JAW_END_ANGLE);
 
 
 		// Draw Lower Jaw (Angles from roughly 190 degrees to 350 degrees)
-		this.drawJaw(g2d, false, centerX, centerY + 40, START_ANGLE_LOWER, END_ANGLE_LOWER);
+		this.drawJaw(g2d, false, centerX, centerY + JAW_VERTICAL_OFFSET, LOWER_JAW_START_ANGLE, LOWER_JAW_END_ANGLE);
 
-		g2d.setFont(new Font("Arial", Font.BOLD, 25));
-		g2d.setColor(Color.DARK_GRAY);
+		g2d.setFont(new Font(theme.panelMainFontFamily(), Font.BOLD, 25));
+		g2d.setColor(theme.panelSubColor());
 
 		// Define padding and metrics for jaws markers
 		FontMetrics fm = g2d.getFontMetrics();
-		int padding = 100;
 
 		// Upper Jaw marker definition
 		String topText = "Верхняя челюсть";
 		int topTextWidth = fm.stringWidth(topText);
 		int topTextX = centerX - topTextWidth / 2;
-		int topTextY = centerY - RADIUS_Y - padding;
+		int topTextY = centerY - JAW_RADIUS_Y - JAW_LABEL_MARGIN;
 		g2d.drawString(topText, topTextX, topTextY);
 
 		// Lower Jaw marker definition
 		String bottomText = "Нижняя челюсть";
 		int bottomTextWidth = fm.stringWidth(bottomText);
 		int bottomTextX = centerX - bottomTextWidth / 2;
-		int bottomTextY = centerY + RADIUS_Y + padding + fm.getAscent();
+		int bottomTextY = centerY + JAW_RADIUS_Y + JAW_LABEL_MARGIN + fm.getAscent();
 		g2d.drawString(bottomText, bottomTextX, bottomTextY);
 
 		// Left side marker
 		String leftText = "Лево";
 		int leftTextWidth = fm.stringWidth(leftText);
-		int leftTextX = centerX - RADIUS_X - leftTextWidth / 2;
+		int leftTextX = centerX - JAW_RADIUS_X - leftTextWidth / 2;
 		g2d.drawString(leftText, leftTextX, centerY);
 
 		//Right side marker
 		String rightText = "Право";
 		int rightTextWidth = fm.stringWidth(rightText);
-		int rightTextX = centerX + RADIUS_X - rightTextWidth / 2;
+		int rightTextX = centerX + JAW_RADIUS_X - rightTextWidth / 2;
 		g2d.drawString(rightText, rightTextX, centerY);
 	}
 
@@ -306,8 +288,8 @@ public class DentalPanel extends JPanel implements Printable {
 			double currentAngle = startAngle + angleStep * (double) i;
 
 			// Calculate x and y using polar equations for an ellipse
-			int x = (int) (centerX + RADIUS_X * Math.cos(currentAngle));
-			int y = (int) (centerY + RADIUS_Y * Math.sin(currentAngle));
+			int x = (int) (centerX + JAW_RADIUS_X * Math.cos(currentAngle));
+			int y = (int) (centerY + JAW_RADIUS_Y * Math.sin(currentAngle));
 
 			this.drawTooth(g2d, tooth, x, y, currentAngle);
 
@@ -320,10 +302,11 @@ public class DentalPanel extends JPanel implements Printable {
 					space = this.mouth.getSpace(start + i - 1);
 				}
 
-				if (Objects.nonNull(brushSelection.getSelectedBrush()) || (Objects.nonNull(space.getOuterBrush()) || Objects.nonNull(space.getInnerBrush()))) {
+				if (Objects.nonNull(brushSelection.getSelectedBrush()) ||
+						(Objects.nonNull(space.getOuterBrush()) || Objects.nonNull(space.getInnerBrush()))) {
 					double midAngle = currentAngle + angleStep / 2;
-					int midX = (int) (centerX + RADIUS_X * Math.cos(midAngle));
-					int midY = (int) (centerY + RADIUS_Y * Math.sin(midAngle));
+					int midX = (int) (centerX + JAW_RADIUS_X * Math.cos(midAngle));
+					int midY = (int) (centerY + JAW_RADIUS_Y * Math.sin(midAngle));
 
 					this.drawSpaces(g2d, space, midX, midY, midAngle);
 				}
@@ -357,17 +340,17 @@ public class DentalPanel extends JPanel implements Printable {
 		g2d.rotate(angle + (Math.PI / 2));
 
 		// Draw the tooth shape (centered on 0,0 since we translated)
-		g2d.setColor(tooth.isAvailable() ? basicToothColor : basicToothColor.darker());
-		g2d.fillRoundRect(-TOOTH_WIDTH / 2, -TOOTH_HEIGHT / 2, TOOTH_WIDTH, TOOTH_HEIGHT, 20, 20);
+		g2d.setColor(tooth.isAvailable() ? theme.toothColor() : theme.unavailableToothColor());
+		g2d.fillRoundRect(-TOOTH_WIDTH / 2, -TOOTH_HEIGHT / 2, TOOTH_WIDTH, TOOTH_HEIGHT, TOOTH_CORNER_ARC_WIDTH, TOOTH_CORNER_ARC_HEIGHT);
 
 		// Draw the outline
-		g2d.setColor(Color.BLACK);
-		g2d.setStroke(new BasicStroke(2.5F));
-		g2d.drawRoundRect(-TOOTH_WIDTH / 2, -TOOTH_HEIGHT / 2, TOOTH_WIDTH, TOOTH_HEIGHT, 20, 20);
+		g2d.setColor(theme.toothOutlineColor());
+		g2d.setStroke(new BasicStroke(TOOTH_OUTLINE_THICKNESS));
+		g2d.drawRoundRect(-TOOTH_WIDTH / 2, -TOOTH_HEIGHT / 2, TOOTH_WIDTH, TOOTH_HEIGHT, TOOTH_CORNER_ARC_WIDTH, TOOTH_CORNER_ARC_HEIGHT);
 
 		// Draw the FDI position text
 		String posText = String.valueOf(tooth.getPosition());
-		g2d.setFont(new Font("Arial", Font.BOLD, 16));
+		g2d.setFont(new Font(theme.panelSubFontFamily(), Font.BOLD, 16));
 		FontMetrics fontMetrics = g2d.getFontMetrics();
 		int textX = -fontMetrics.stringWidth(posText) / 2;
 		int textY = -fontMetrics.getAscent() / 2 - 2;
@@ -406,10 +389,10 @@ public class DentalPanel extends JPanel implements Printable {
 				if (Objects.nonNull(brush)) {
 					return brush.getColor();
 				} else {
-					return background;
+					return theme.availableSpaceColor();
 				}
 			}
-			return background.darker();
+			return theme.unavailableSpaceColor();
 		};
 
 		log.trace("Rendering spaces '{}' between left tooth - '{}' and right tooth - '{}'.", space.getPosition(), space.getLeftTooth().getPosition(), space.getRightTooth().getPosition());
@@ -417,28 +400,20 @@ public class DentalPanel extends JPanel implements Printable {
 		Stroke stroke;
 		//Set stroke params
 		if (space.isAvailable() && Objects.isNull(space.getInnerBrush()) && Objects.isNull(space.getOuterBrush())) {
-			stroke = new BasicStroke(2.0F, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[]{19.0f, 5.0f}, 0.0f);
+			stroke = EMPTY_SPACE_STROKE;
 		} else {
-			stroke = new BasicStroke(2.0F);
+			stroke = FILLED_SPACE_STROKE;
 		}
 
 		// Draw outer space
 		if (Objects.isNull(space.getInnerBrush())) {
-			drawSpace(g2d, BASIC_SPACE_X, OUTER_SPACE_Y, getColor.apply(space.getOuterBrush()), stroke);
+			drawSpace(g2d, spaceTriangleX(), outerSpaceTriangleY(), getColor.apply(space.getOuterBrush()), stroke);
 		}
 
 		// Draw inner space
 		if (Objects.isNull(space.getOuterBrush())) {
-			drawSpace(g2d, BASIC_SPACE_X, INNER_SPACE_Y, getColor.apply(space.getInnerBrush()), stroke);
+			drawSpace(g2d, spaceTriangleX(), innerSpaceTriangleY(), getColor.apply(space.getInnerBrush()), stroke);
 		}
-
-		// Draw the FDI position text
-//			String posText = String.valueOf(space.getPosition());
-//			g2d.setFont(new Font("Arial", Font.BOLD, 16));
-//			FontMetrics fontMetrics = g2d.getFontMetrics();
-//			int textX = -fontMetrics.stringWidth(posText) / 2;
-//			int textY = fontMetrics.getAscent() / 2 - 2;
-//			g2d.drawString(posText, textX, textY);
 
 		// Restore the original transform so the next space draws correctly
 		g2d.setTransform(originalTransform);
@@ -462,7 +437,7 @@ public class DentalPanel extends JPanel implements Printable {
 		g2d.fillPolygon(xPoints, yPoints, 3);
 
 		// Draw the outline
-		g2d.setColor(Color.BLACK);
+		g2d.setColor(theme.spaceOutlineColor());
 		g2d.setStroke(stroke);
 		g2d.drawPolygon(xPoints, yPoints, 3);
 	}

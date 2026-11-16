@@ -35,18 +35,18 @@ public class DentalGeometry {
 	 */
 	public static Optional<Integer> checkToothClick(int mouseX, int mouseY,
 	                              int centerX, int centerY, boolean isUpperJaw) {
-		double startAngle = isUpperJaw ? START_ANGLE_UPPER : START_ANGLE_LOWER;
-		double endAngle = isUpperJaw ? END_ANGLE_UPPER : END_ANGLE_LOWER;
+		double startAngle = isUpperJaw ? UPPER_JAW_START_ANGLE : LOWER_JAW_START_ANGLE;
+		double endAngle = isUpperJaw ? UPPER_JAW_END_ANGLE : LOWER_JAW_END_ANGLE;
 		int startPosition = isUpperJaw ? 0 : 16;
 		double angleStep = (endAngle - startAngle) / 15;
 
 		// 1. Check if the user clicked any Tooth
 		for (int i = 0; i < 16; i++) {
 			double currentAngle = startAngle + angleStep * (double) i;
-			int x = (int) (centerX + RADIUS_X * Math.cos(currentAngle));
-			int y = (int) (centerY + RADIUS_Y * Math.sin(currentAngle));
+			int x = (int) (centerX + JAW_RADIUS_X * Math.cos(currentAngle));
+			int y = (int) (centerY + JAW_RADIUS_Y * Math.sin(currentAngle));
 
-			if (getDistance(mouseX, mouseY, x, y) <= TOOTH_RADIUS) {
+			if (getDistance(mouseX, mouseY, x, y) <= TOOTH_CLICK_RADIUS) {
 				return Optional.of(startPosition + i);
 			}
 		}
@@ -73,8 +73,8 @@ public class DentalGeometry {
 	 * 15–29 for the lower jaw) and the clicked part if a space was hit, otherwise {@code Optional.empty()}.
 	 */
 	public static Optional<SpaceHit> checkSpaceClick(int mouseX, int mouseY, int centerX, int centerY, boolean isUpperJaw) {
-		double startAngle = isUpperJaw ? START_ANGLE_UPPER : START_ANGLE_LOWER;
-		double endAngle = isUpperJaw ? END_ANGLE_UPPER : END_ANGLE_LOWER;
+		double startAngle = isUpperJaw ? UPPER_JAW_START_ANGLE : LOWER_JAW_START_ANGLE;
+		double endAngle = isUpperJaw ? UPPER_JAW_END_ANGLE : LOWER_JAW_END_ANGLE;
 		int startPosition = isUpperJaw ? 0 : 16;
 		double angleStep = (endAngle - startAngle) / 15;
 
@@ -82,20 +82,20 @@ public class DentalGeometry {
 			double currentAngle = startAngle + angleStep * i;
 			double midAngle = currentAngle + angleStep / 2;
 
-			int midX = (int) (centerX + RADIUS_X * Math.cos(midAngle));
-			int midY = (int) (centerY + RADIUS_Y * Math.sin(midAngle));
+			int midX = (int) (centerX + JAW_RADIUS_X * Math.cos(midAngle));
+			int midY = (int) (centerY + JAW_RADIUS_Y * Math.sin(midAngle));
 
-			int outerX = (int) Math.round(midX - LOCAL_OUTER_Y * Math.sin(midAngle + Math.PI / 2));
-			int outerY = (int) Math.round(midY + LOCAL_OUTER_Y * Math.cos(midAngle + Math.PI / 2));
+			int outerX = (int) Math.round(midX - OUTER_SPACE_CENTER_Y * Math.sin(midAngle + Math.PI / 2));
+			int outerY = (int) Math.round(midY + OUTER_SPACE_CENTER_Y * Math.cos(midAngle + Math.PI / 2));
 
-			int innerX = (int) Math.round(midX - LOCAL_INNER_Y * Math.sin(midAngle + Math.PI / 2));
-			int innerY = (int) Math.round(midY + LOCAL_INNER_Y * Math.cos(midAngle + Math.PI / 2));
+			int innerX = (int) Math.round(midX - INNER_SPACE_CENTER_Y * Math.sin(midAngle + Math.PI / 2));
+			int innerY = (int) Math.round(midY + INNER_SPACE_CENTER_Y * Math.cos(midAngle + Math.PI / 2));
 
 			int spacePosition = isUpperJaw ? (startPosition + i) : (startPosition + i - 1);
 
-			if (getDistance(mouseX, mouseY, outerX, outerY) <= SPACE_RADIUS) {
+			if (getDistance(mouseX, mouseY, outerX, outerY) <= SPACE_CLICK_RADIUS) {
 				return Optional.of(new SpaceHit(spacePosition, false));
-			} else if (getDistance(mouseX, mouseY, innerX, innerY) <= SPACE_RADIUS) {
+			} else if (getDistance(mouseX, mouseY, innerX, innerY) <= SPACE_CLICK_RADIUS) {
 				return Optional.of(new SpaceHit(spacePosition, true));
 			}
 		}

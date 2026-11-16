@@ -5,6 +5,8 @@ import javax.swing.border.AbstractBorder;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
 
+import static ru.yanes.config.DentalGeometryConstants.COMMENT_AREA_BORDER_THICKNESS;
+
 /**
  * A text area for a comment with a fixed number of rows and columns.
  * <p>
@@ -20,8 +22,6 @@ import java.awt.*;
 public class CommentTextArea extends JTextArea {
 	/** Border corner radius in pixels. */
 	private final int borderRadius = 20;
-	/** Borderline thickness. */
-	private final float borderThickness = 2F;
 	/** Maximum number of lines allowed in a text area. */
 	private final int rowLimit;
 	/** Maximum allowed number of columns (characters per line). */
@@ -56,7 +56,7 @@ public class CommentTextArea extends JTextArea {
 		this.setOpaque(false);
 		this.setFont(font);
 
-		this.setBorder(new CommentTextArea.RoundBorder(borderThickness, borderRadius, background.darker()));
+		this.setBorder(new CommentTextArea.RoundBorder(COMMENT_AREA_BORDER_THICKNESS, borderRadius, background.darker()));
 
 		PlainDocument document = (PlainDocument) this.getDocument();
 		document.setDocumentFilter(new TextLimitDocumentFilter(rowLimit, colLimit * rowLimit));
@@ -122,7 +122,7 @@ public class CommentTextArea extends JTextArea {
 
 		/**
 		 * Draws a rounded rectangle border around the component.
-		 * Enables anti-aliasing for smooth curves.
+		 * Enables antialiasing for smooth curves.
 		 *
 		 * @param c the component for which to draw the border;
 		 * @param g the graphics context;
