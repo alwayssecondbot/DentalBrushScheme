@@ -50,8 +50,8 @@ class DentalGeometryTests {
 	 * @return the angle step in radians.
 	 */
 	private static double angleStep(boolean isUpperJaw) {
-		double startAngle = isUpperJaw ? START_ANGLE_UPPER : START_ANGLE_LOWER;
-		double endAngle = isUpperJaw ? END_ANGLE_UPPER : END_ANGLE_LOWER;
+		double startAngle = isUpperJaw ? UPPER_JAW_START_ANGLE : LOWER_JAW_START_ANGLE;
+		double endAngle = isUpperJaw ? UPPER_JAW_END_ANGLE : LOWER_JAW_END_ANGLE;
 		return (endAngle - startAngle) / 15;
 	}
 
@@ -62,14 +62,14 @@ class DentalGeometryTests {
 	 * @return the start angle in radians.
 	 */
 	private static double startAngle(boolean isUpperJaw) {
-		return isUpperJaw ? START_ANGLE_UPPER : START_ANGLE_LOWER;
+		return isUpperJaw ? UPPER_JAW_START_ANGLE : LOWER_JAW_START_ANGLE;
 	}
 
 	/** Pixel of tooth #i (0-15) on the given jaw, as computed by {@code checkToothClick}. */
 	private static int[] toothPixel(boolean isUpperJaw, int i) {
 		double angle = startAngle(isUpperJaw) + angleStep(isUpperJaw) * i;
-		int x = (int) (CENTER_X + RADIUS_X * Math.cos(angle));
-		int y = (int) (CENTER_Y + RADIUS_Y * Math.sin(angle));
+		int x = (int) (CENTER_X + JAW_RADIUS_X * Math.cos(angle));
+		int y = (int) (CENTER_Y + JAW_RADIUS_Y * Math.sin(angle));
 		return new int[]{x, y};
 	}
 
@@ -89,8 +89,8 @@ class DentalGeometryTests {
 	 */
 	private static int[] spacePixel(boolean isUpperJaw, int i, double localOffset) {
 		double midAngle = spaceMidAngle(isUpperJaw, i);
-		int midX = (int) (CENTER_X + RADIUS_X * Math.cos(midAngle));
-		int midY = (int) (CENTER_Y + RADIUS_Y * Math.sin(midAngle));
+		int midX = (int) (CENTER_X + JAW_RADIUS_X * Math.cos(midAngle));
+		int midY = (int) (CENTER_Y + JAW_RADIUS_Y * Math.sin(midAngle));
 		int x = (int) Math.round(midX - localOffset * Math.sin(midAngle + Math.PI / 2));
 		int y = (int) Math.round(midY + localOffset * Math.cos(midAngle + Math.PI / 2));
 		return new int[]{x, y};
@@ -98,12 +98,12 @@ class DentalGeometryTests {
 
 	/** Pixel of the center of the outer triangle of space #i (0-14) on the given jaw. */
 	private static int[] outerSpacePixel(boolean isUpperJaw, int i) {
-		return spacePixel(isUpperJaw, i, LOCAL_OUTER_Y);
+		return spacePixel(isUpperJaw, i, OUTER_SPACE_CENTER_Y);
 	}
 
 	/** Pixel of the center of the inner triangle of space #i (0-14) on the given jaw. */
 	private static int[] innerSpacePixel(boolean isUpperJaw, int i) {
-		return spacePixel(isUpperJaw, i, LOCAL_INNER_Y);
+		return spacePixel(isUpperJaw, i, INNER_SPACE_CENTER_Y);
 	}
 
 	// ============================================================
@@ -147,7 +147,7 @@ class DentalGeometryTests {
 		void boundaryDistanceIsAHit() {
 			int[] p = toothPixel(true, 7);
 			assertEquals(Optional.of(7),
-					DentalGeometry.checkToothClick(p[0] + TOOTH_RADIUS, p[1], CENTER_X, CENTER_Y, true));
+					DentalGeometry.checkToothClick(p[0] + TOOTH_CLICK_RADIUS, p[1], CENTER_X, CENTER_Y, true));
 		}
 
 		@Test
@@ -155,7 +155,7 @@ class DentalGeometryTests {
 		void justPastBoundaryIsAMiss() {
 			int[] p = toothPixel(true, 7);
 			assertEquals(Optional.empty(),
-					DentalGeometry.checkToothClick(p[0] + TOOTH_RADIUS + 1, p[1], CENTER_X, CENTER_Y, true));
+					DentalGeometry.checkToothClick(p[0] + TOOTH_CLICK_RADIUS + 1, p[1], CENTER_X, CENTER_Y, true));
 		}
 
 		@Test
@@ -217,7 +217,7 @@ class DentalGeometryTests {
 		void boundaryDistanceIsAHit() {
 			int[] p = outerSpacePixel(true, 5);
 			assertEquals(Optional.of(new SpaceHit(5, false)),
-					DentalGeometry.checkSpaceClick(p[0] + SPACE_RADIUS, p[1], CENTER_X, CENTER_Y, true));
+					DentalGeometry.checkSpaceClick(p[0] + SPACE_CLICK_RADIUS, p[1], CENTER_X, CENTER_Y, true));
 		}
 
 		@Test
@@ -225,7 +225,7 @@ class DentalGeometryTests {
 		void justPastBoundaryIsAMiss() {
 			int[] p = outerSpacePixel(true, 5);
 			assertEquals(Optional.empty(),
-					DentalGeometry.checkSpaceClick(p[0] + SPACE_RADIUS + 1, p[1], CENTER_X, CENTER_Y, true));
+					DentalGeometry.checkSpaceClick(p[0] + SPACE_CLICK_RADIUS + 1, p[1], CENTER_X, CENTER_Y, true));
 		}
 
 		@Test

@@ -53,12 +53,12 @@ class UIThemeTests {
 	 */
 	static Stream<Arguments> nullComponentCases() {
 		return Stream.of(
-				nullCase("background", b -> b.background(null)),
-				nullCase("panelMainFont", b -> b.panelMainFont(null)),
+				nullCase("backgroundColor", b -> b.backgroundColor(null)),
+				nullCase("panelMainFontFamily", b -> b.panelMainFontFamily(null)),
 				nullCase("panelMainColor", b -> b.panelMainColor(null)),
-				nullCase("panelSubFont", b -> b.panelSubFont(null)),
+				nullCase("panelSubFontFamily", b -> b.panelSubFontFamily(null)),
 				nullCase("panelSubColor", b -> b.panelSubColor(null)),
-				nullCase("selectedBrushOutlineColor", b -> b.selectedBrushOutlineColor(null)),
+				nullCase("selectionShadowColor", b -> b.selectionShadowColor(null)),
 				nullCase("brushOutlineColor", b -> b.brushOutlineColor(null)),
 				nullCase("toothOutlineColor", b -> b.toothOutlineColor(null)),
 				nullCase("toothColor", b -> b.toothColor(null)),
@@ -118,14 +118,14 @@ class UIThemeTests {
 		@Test
 		@DisplayName("Changing a copy made with toBuilder() does not change DEFAULT")
 		void changingCopyDoesNotChangeDefault() {
-			Color originalBackground = UITheme.DEFAULT.background();
+			Color originalBackground = UITheme.DEFAULT.backgroundColor();
 			Color newBackground = new Color(1, 2, 3);
 
-			UITheme copy = UITheme.DEFAULT.toBuilder().background(newBackground).build();
+			UITheme copy = UITheme.DEFAULT.toBuilder().backgroundColor(newBackground).build();
 
 			assertAll(
-					() -> assertEquals(newBackground, copy.background()),
-					() -> assertEquals(originalBackground, UITheme.DEFAULT.background()),
+					() -> assertEquals(newBackground, copy.backgroundColor()),
+					() -> assertEquals(originalBackground, UITheme.DEFAULT.backgroundColor()),
 					() -> assertNotEquals(UITheme.DEFAULT, copy)
 			);
 		}
@@ -171,34 +171,34 @@ class UIThemeTests {
 		}
 
 		@Test
-		@DisplayName("Available space color equals background")
+		@DisplayName("Available space color equals backgroundColor")
 		void availableSpaceColorEqualsBackground() {
-			assertEquals(UITheme.DEFAULT.background(), UITheme.DEFAULT.availableSpaceColor());
+			assertEquals(UITheme.DEFAULT.backgroundColor(), UITheme.DEFAULT.availableSpaceColor());
 		}
 
 		@Test
-		@DisplayName("Unavailable space color is darker than background")
+		@DisplayName("Unavailable space color is darker than backgroundColor")
 		void unavailableSpaceColorIsDarker() {
 			UITheme theme = UITheme.DEFAULT;
 			assertAll(
-					() -> assertEquals(theme.background().darker(), theme.unavailableSpaceColor()),
-					() -> assertTrue(isDarker(theme.background(), theme.unavailableSpaceColor()))
+					() -> assertEquals(theme.backgroundColor().darker(), theme.unavailableSpaceColor()),
+					() -> assertTrue(isDarker(theme.backgroundColor(), theme.unavailableSpaceColor()))
 			);
 		}
 
 		@Test
-		@DisplayName("Comment text area background equals background")
+		@DisplayName("Comment text area backgroundColor equals backgroundColor")
 		void commentTextAreaBackgroundEqualsBackground() {
-			assertEquals(UITheme.DEFAULT.background(), UITheme.DEFAULT.commentTextAreaBackgroundColor());
+			assertEquals(UITheme.DEFAULT.backgroundColor(), UITheme.DEFAULT.commentTextAreaBackgroundColor());
 		}
 
 		@Test
-		@DisplayName("Comment text area outline is darker than background")
+		@DisplayName("Comment text area outline is darker than backgroundColor")
 		void commentTextAreaOutlineIsDarker() {
 			UITheme theme = UITheme.DEFAULT;
 			assertAll(
-					() -> assertEquals(theme.background().darker(), theme.commentTextAreaOutlineColor()),
-					() -> assertTrue(isDarker(theme.background(), theme.commentTextAreaOutlineColor()))
+					() -> assertEquals(theme.backgroundColor().darker(), theme.commentTextAreaOutlineColor()),
+					() -> assertTrue(isDarker(theme.backgroundColor(), theme.commentTextAreaOutlineColor()))
 			);
 		}
 
@@ -208,7 +208,7 @@ class UIThemeTests {
 			Color background = new Color(100, 150, 200);
 			Color tooth = new Color(250, 200, 150);
 			UITheme theme = UITheme.DEFAULT.toBuilder()
-					.background(background)
+					.backgroundColor(background)
 					.toothColor(tooth)
 					.build();
 
